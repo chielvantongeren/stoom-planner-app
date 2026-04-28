@@ -1486,31 +1486,40 @@ async function loadVandaag() {
   el.innerHTML = '<div class="loading-box"><div class="spinner"></div><div class="loading-text">MICE raadplegen...</div></div>';
 
   try {
-    const today = selectedDate.toISOString().split('T')[0];
-    const data = await miceGet(`/events?limit=100&page=1&include_activities=true&include_location=true`);
+    // Gebruik lokale datum (niet UTC via toISOString)
+    const today = `${selectedDate.getFullYear()}-${String(selectedDate.getMonth()+1).padStart(2,'0')}-${String(selectedDate.getDate()).padStart(2,'0')}`;
 
-    // Ontdek de juiste array-sleutel in de response
+    // Haal alle pagina's op totdat we voorbij de gevraagde datum zijn
     let allEvents = [];
-    if (Array.isArray(data)) {
-      allEvents = data;
-    } else if (Array.isArray(data.data)) {
-      allEvents = data.data;
-    } else if (Array.isArray(data.events)) {
-      allEvents = data.events;
-    } else {
-      // Zoek eerste array in response
-      for (const key of Object.keys(data || {})) {
-        if (Array.isArray(data[key])) { allEvents = data[key]; break; }
+    let page = 1;
+    let keepGoing = true;
+
+    while (keepGoing && page <= 14) {
+      const data = await miceGet(`/events?limit=25&page=${page}&include_activities=true&include_location=true`);
+      let pageEvents = [];
+      if (Array.isArray(data)) pageEvents = data;
+      else if (Array.isArray(data.data)) pageEvents = data.data;
+      else if (Array.isArray(data.events)) pageEvents = data.events;
+      else for (const key of Object.keys(data || {})) {
+        if (Array.isArray(data[key])) { pageEvents = data[key]; break; }
       }
+
+      if (!pageEvents.length) break;
+
+      // Voeg events van deze datum toe
+      pageEvents.forEach(ev => {
+        const d = ev.datetime_start || ev.date || ev.start_date || '';
+        if (d.startsWith(today)) allEvents.push(ev);
+      });
+
+      // Stop als de oudste event op deze pagina ouder is dan gevraagde datum
+      const lastDate = pageEvents[pageEvents.length - 1]?.datetime_start || '';
+      if (lastDate && lastDate < today) keepGoing = false;
+
+      page++;
     }
 
-    // Filter op geselecteerde datum — probeer alle mogelijke datumvelden
-    const events = allEvents.filter(ev => {
-      const fields = [ev.date, ev.start_date, ev.datetime_start, ev.datetime_end, ev.starts_at, ev.event_date];
-      return fields.some(d => d && String(d).startsWith(today));
-    });
-
-    renderVandaag(events.length ? events : []);
+    renderVandaag(allEvents);
   } catch(e) {
     el.innerHTML = `<div class="empty-box" style="text-align:left;padding:16px">
       <div style="font-family:'Barlow Condensed',sans-serif;font-size:13px;color:var(--danger);margin-bottom:8px;text-transform:uppercase;letter-spacing:0.5px">⚠ API Fout</div>
