@@ -1223,12 +1223,10 @@ transition: all 0.15s;
   <div class="settings-title">MICE API</div>
   <div class="settings-row">
     <div class="settings-label">
-      API Key
-      <small>Uit MICE → Instellingen → Integraties</small>
+      API Verbinding
+      <small>Loopt via Vercel server — veilig</small>
     </div>
-  </div>
-  <div class="settings-row">
-    <input type="password" class="settings-input" id="apiKeyInput" placeholder="mice_api_key..." style="width:100%">
+    <div class="pill confirmed"><div class="pill-dot"></div>Actief</div>
   </div>
   <div class="settings-row">
     <div class="settings-label">Het Lab<small>Locatie ID in MICE</small></div>
@@ -1285,7 +1283,7 @@ let selectedDate = new Date();
 let calViewMonth = new Date();
 let calOpen = false;
 
-const MICE_BASE = 'https://app.miceoperations.com/api/v1';
+const MICE_BASE = '/api/mice';
 
 const DAYS_NL = ['Zondag','Maandag','Dinsdag','Woensdag','Donderdag','Vrijdag','Zaterdag'];
 const DAYS_SHORT = ['Ma','Di','Wo','Do','Vr','Za','Zo'];
@@ -1425,23 +1423,21 @@ function switchTab(tab) {
 
 // ─── SETTINGS ────────────────────────────────────────
 function loadSettings() {
-  if (settings.apiKey) {
-    document.getElementById('apiKeyInput').value = settings.apiKey;
-    document.getElementById('locLab').value = settings.locLab || '';
-    document.getElementById('locWerkplaats').value = settings.locWerkplaats || '';
-    document.getElementById('locBoss').value = settings.locBoss || '';
-    setApiStatus(true);
-  }
+  // Prefill bekende locatie IDs
+  if (!settings.locLab) settings.locLab = '17571';
+  if (!settings.locWerkplaats) settings.locWerkplaats = '17572';
+  if (!settings.locBoss) settings.locBoss = '17573';
+  document.getElementById('locLab').value = settings.locLab;
+  document.getElementById('locWerkplaats').value = settings.locWerkplaats;
+  document.getElementById('locBoss').value = settings.locBoss;
+  setApiStatus(true);
 }
 
 function saveSettings() {
-  const key = document.getElementById('apiKeyInput').value.trim();
-  if (!key) { alert('Vul een API key in.'); return; }
   settings = {
-    apiKey: key,
-    locLab: document.getElementById('locLab').value.trim(),
-    locWerkplaats: document.getElementById('locWerkplaats').value.trim(),
-    locBoss: document.getElementById('locBoss').value.trim()
+    locLab: document.getElementById('locLab').value.trim() || '17571',
+    locWerkplaats: document.getElementById('locWerkplaats').value.trim() || '17572',
+    locBoss: document.getElementById('locBoss').value.trim() || '17573'
   };
   localStorage.setItem('stoom_settings', JSON.stringify(settings));
   setApiStatus(true);
@@ -1467,15 +1463,12 @@ function setApiStatus(ok) {
 
 // ─── MICE API ─────────────────────────────────────────
 async function miceGet(path) {
-  if (!settings.apiKey) throw new Error('Geen API key');
-  // MICE gebruikt X-Authorization: Basic [key]
-  const res = await fetch(`${MICE_BASE}${path}`, {
-    headers: {
-      'X-Authorization': `Basic ${settings.apiKey}`,
-      'Content-Type': 'application/json',
-      'Accept': 'application/json'
-    }
-  });
+  // Via Vercel proxy — API key zit server-side in env var
+  // path format: /events?limit=100 -> /api/mice?path=/events&limit=100
+  const [pathname, qs] = path.split('?');
+  const params = new URLSearchParams(qs || '');
+  params.set('path', pathname);
+  const res = await fetch(`${MICE_BASE}?${params.toString()}`);
   if (!res.ok) {
     const errText = await res.text().catch(() => '');
     throw new Error(`HTTP ${res.status}: ${errText.substring(0, 200)}`);
