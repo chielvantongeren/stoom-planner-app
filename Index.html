@@ -1,0 +1,1862 @@
+<!DOCTYPE html>
+
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>STOOM Planner</title>
+
+<!-- PWA / iPhone homescreen -->
+
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="STOOM">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#132d4a">
+
+<!-- App icons (inline SVG als data URI zodat geen externe bestanden nodig zijn) -->
+
+<link rel="apple-touch-icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxODAgMTgwIj48cmVjdCB3aWR0aD0iMTgwIiBoZWlnaHQ9IjE4MCIgcng9IjQwIiBmaWxsPSIjMTMyZDRhIi8+PHJlY3QgeD0iMjAiIHk9IjExMCIgd2lkdGg9IjE0MCIgaGVpZ2h0PSI1MCIgcng9IjQiIGZpbGw9IiNENDk0MEEiLz48cmVjdCB4PSI0MCIgeT0iNjAiIHdpZHRoPSIxMDAiIGhlaWdodD0iNjAiIHJ4PSI0IiBmaWxsPSJ3aGl0ZSIvPjxyZWN0IHg9IjcwIiB5PSIyMCIgd2lkdGg9IjI1IiBoZWlnaHQ9IjQ1IiByeD0iMyIgZmlsbD0id2hpdGUiLz48cmVjdCB4PSI0NSIgeT0iNzAiIHdpZHRoPSIyNSIgaGVpZ2h0PSIyNSIgZmlsbD0iIzEzMmQ0YSIvPjxyZWN0IHg9Ijc4IiB5PSI3MCIgd2lkdGg9IjI1IiBoZWlnaHQ9IjI1IiBmaWxsPSIjMTMyZDRhIi8+PHJlY3QgeD0iMTExIiB5PSI3MCIgd2lkdGg9IjI1IiBoZWlnaHQ9IjI1IiBmaWxsPSIjMTMyZDRhIi8+PC9zdmc+">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxODAgMTgwIj48cmVjdCB3aWR0aD0iMTgwIiBoZWlnaHQ9IjE4MCIgcng9IjQwIiBmaWxsPSIjMTMyZDRhIi8+PHJlY3QgeD0iMjAiIHk9IjExMCIgd2lkdGg9IjE0MCIgaGVpZ2h0PSI1MCIgcng9IjQiIGZpbGw9IiNENDk0MEEiLz48cmVjdCB4PSI0MCIgeT0iNjAiIHdpZHRoPSIxMDAiIGhlaWdodD0iNjAiIHJ4PSI0IiBmaWxsPSJ3aGl0ZSIvPjxyZWN0IHg9IjcwIiB5PSIyMCIgd2lkdGg9IjI1IiBoZWlnaHQ9IjQ1IiByeD0iMyIgZmlsbD0id2hpdGUiLz48cmVjdCB4PSI0NSIgeT0iNzAiIHdpZHRoPSIyNSIgaGVpZ2h0PSIyNSIgZmlsbD0iIzEzMmQ0YSIvPjxyZWN0IHg9Ijc4IiB5PSI3MCIgd2lkdGg9IjI1IiBoZWlnaHQ9IjI1IiBmaWxsPSIjMTMyZDRhIi8+PHJlY3QgeD0iMTExIiB5PSI3MCIgd2lkdGg9IjI1IiBoZWlnaHQ9IjI1IiBmaWxsPSIjMTMyZDRhIi8+PC9zdmc+">
+
+<!-- PWA Manifest inline -->
+
+<script>
+const manifestData = {
+  name: "STOOM Planner",
+  short_name: "STOOM",
+  description: "STOOM Apeldoorn — Planner App",
+  start_url: "/",
+  display: "standalone",
+  background_color: "#0c1f33",
+  theme_color: "#132d4a",
+  orientation: "portrait",
+  icons: [
+    { src: "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxODAgMTgwIj48cmVjdCB3aWR0aD0iMTgwIiBoZWlnaHQ9IjE4MCIgcng9IjQwIiBmaWxsPSIjMTMyZDRhIi8+PHJlY3QgeD0iMjAiIHk9IjExMCIgd2lkdGg9IjE0MCIgaGVpZ2h0PSI1MCIgcng9IjQiIGZpbGw9IiNENDk0MEEiLz48cmVjdCB4PSI0MCIgeT0iNjAiIHdpZHRoPSIxMDAiIGhlaWdodD0iNjAiIHJ4PSI0IiBmaWxsPSJ3aGl0ZSIvPjxyZWN0IHg9IjcwIiB5PSIyMCIgd2lkdGg9IjI1IiBoZWlnaHQ9IjQ1IiByeD0iMyIgZmlsbD0id2hpdGUiLz48cmVjdCB4PSI0NSIgeT0iNzAiIHdpZHRoPSIyNSIgaGVpZ2h0PSIyNSIgZmlsbD0iIzEzMmQ0YSIvPjxyZWN0IHg9Ijc4IiB5PSI3MCIgd2lkdGg9IjI1IiBoZWlnaHQ9IjI1IiBmaWxsPSIjMTMyZDRhIi8+PHJlY3QgeD0iMTExIiB5PSI3MCIgd2lkdGg9IjI1IiBoZWlnaHQ9IjI1IiBmaWxsPSIjMTMyZDRhIi8+PC9zdmc+", sizes: "180x180", type: "image/svg+xml" }
+  ]
+};
+const blob = new Blob([JSON.stringify(manifestData)], {type: 'application/json'});
+const manifestUrl = URL.createObjectURL(blob);
+const link = document.createElement('link');
+link.rel = 'manifest';
+link.href = manifestUrl;
+document.head.appendChild(link);
+</script>
+
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Barlow+Condensed:wght@400;600;700&family=Barlow:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --navy: #132d4a;
+    --navy-light: #1a3d63;
+    --navy-dark: #0c1f33;
+    --gold: #D4940A;
+    --gold-light: #f0a80c;
+    --white: #ffffff;
+    --gray: #8a9bb0;
+    --gray-light: #e8edf3;
+    --surface: #1e3a56;
+    --surface2: #243f5e;
+    --danger: #e05252;
+    --success: #4caf82;
+  }
+
+- { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+body {
+font-family: ‘Barlow’, sans-serif;
+background: var(–navy-dark);
+color: var(–white);
+min-height: 100vh;
+min-height: -webkit-fill-available;
+max-width: 430px;
+margin: 0 auto;
+position: relative;
+overflow-x: hidden;
+padding-top: env(safe-area-inset-top);
+padding-bottom: env(safe-area-inset-bottom);
+}
+
+/* HEADER */
+.header {
+background: var(–navy);
+padding: 16px 20px 12px;
+display: flex;
+align-items: center;
+justify-content: space-between;
+border-bottom: 2px solid var(–gold);
+position: sticky;
+top: 0;
+z-index: 100;
+}
+
+.header-logo {
+display: flex;
+align-items: center;
+gap: 10px;
+}
+
+.header-logo svg {
+width: 32px;
+height: 32px;
+}
+
+.header-title {
+font-family: ‘Anton’, sans-serif;
+font-size: 20px;
+letter-spacing: 2px;
+color: var(–white);
+line-height: 1;
+}
+
+.header-title span {
+color: var(–gold);
+}
+
+.header-date {
+font-family: ‘Barlow Condensed’, sans-serif;
+font-size: 12px;
+color: var(–gray);
+text-transform: uppercase;
+letter-spacing: 1px;
+text-align: right;
+}
+
+.header-date strong {
+display: block;
+color: var(–white);
+font-size: 14px;
+}
+
+/* TABS */
+.tabs {
+display: grid;
+grid-template-columns: repeat(4, 1fr);
+background: var(–navy);
+border-bottom: 1px solid rgba(255,255,255,0.08);
+position: sticky;
+top: 65px;
+z-index: 99;
+}
+
+.tab {
+display: flex;
+flex-direction: column;
+align-items: center;
+gap: 4px;
+padding: 10px 4px 8px;
+cursor: pointer;
+border-bottom: 3px solid transparent;
+transition: all 0.2s;
+position: relative;
+}
+
+.tab.active {
+border-bottom-color: var(–gold);
+}
+
+.tab svg {
+width: 22px;
+height: 22px;
+stroke: var(–gray);
+transition: stroke 0.2s;
+}
+
+.tab.active svg { stroke: var(–gold); }
+
+.tab-label {
+font-family: ‘Barlow Condensed’, sans-serif;
+font-size: 10px;
+font-weight: 600;
+letter-spacing: 0.5px;
+text-transform: uppercase;
+color: var(–gray);
+transition: color 0.2s;
+}
+
+.tab.active .tab-label { color: var(–gold); }
+
+.tab-badge {
+position: absolute;
+top: 6px;
+right: 14px;
+background: var(–gold);
+color: var(–navy-dark);
+font-size: 9px;
+font-weight: 700;
+min-width: 16px;
+height: 16px;
+border-radius: 8px;
+display: flex;
+align-items: center;
+justify-content: center;
+padding: 0 4px;
+font-family: ‘Barlow Condensed’, sans-serif;
+}
+
+/* CONTENT */
+.content {
+padding: 16px;
+padding-bottom: 24px;
+}
+
+.panel { display: none; }
+.panel.active { display: block; }
+
+/* SECTION HEADER */
+.section-header {
+display: flex;
+align-items: center;
+justify-content: space-between;
+margin-bottom: 14px;
+}
+
+.section-title {
+font-family: ‘Anton’, sans-serif;
+font-size: 18px;
+letter-spacing: 1.5px;
+text-transform: uppercase;
+color: var(–white);
+}
+
+.section-sub {
+font-size: 12px;
+color: var(–gray);
+margin-top: 1px;
+font-family: ‘Barlow Condensed’, sans-serif;
+letter-spacing: 0.5px;
+}
+
+.btn-sm {
+background: var(–gold);
+color: var(–navy-dark);
+font-family: ‘Barlow Condensed’, sans-serif;
+font-weight: 700;
+font-size: 12px;
+letter-spacing: 1px;
+text-transform: uppercase;
+border: none;
+border-radius: 6px;
+padding: 8px 14px;
+cursor: pointer;
+display: flex;
+align-items: center;
+gap: 6px;
+transition: background 0.15s;
+}
+
+.btn-sm:active { background: var(–gold-light); }
+
+.btn-sm svg {
+width: 14px;
+height: 14px;
+stroke: var(–navy-dark);
+stroke-width: 2.5;
+}
+
+/* STATUS PILL */
+.pill {
+display: inline-flex;
+align-items: center;
+gap: 5px;
+padding: 3px 10px;
+border-radius: 20px;
+font-family: ‘Barlow Condensed’, sans-serif;
+font-size: 11px;
+font-weight: 600;
+letter-spacing: 0.5px;
+text-transform: uppercase;
+}
+
+.pill-dot {
+width: 6px; height: 6px;
+border-radius: 50%;
+}
+
+.pill.confirmed { background: rgba(76,175,130,0.15); color: var(–success); }
+.pill.confirmed .pill-dot { background: var(–success); }
+.pill.option { background: rgba(212,148,10,0.15); color: var(–gold); }
+.pill.option .pill-dot { background: var(–gold); }
+.pill.pending { background: rgba(138,155,176,0.15); color: var(–gray); }
+.pill.pending .pill-dot { background: var(–gray); }
+
+/* CARDS */
+.card {
+background: var(–surface);
+border-radius: 12px;
+margin-bottom: 10px;
+overflow: hidden;
+border: 1px solid rgba(255,255,255,0.06);
+transition: border-color 0.2s;
+}
+
+.card:active { border-color: var(–gold); }
+
+.card-header {
+padding: 14px 16px 10px;
+display: flex;
+align-items: flex-start;
+justify-content: space-between;
+gap: 8px;
+}
+
+.card-title {
+font-family: ‘Barlow Condensed’, sans-serif;
+font-weight: 700;
+font-size: 16px;
+letter-spacing: 0.5px;
+color: var(–white);
+line-height: 1.2;
+}
+
+.card-meta {
+font-size: 12px;
+color: var(–gray);
+margin-top: 3px;
+font-family: ‘Barlow’, sans-serif;
+}
+
+.card-divider {
+height: 1px;
+background: rgba(255,255,255,0.06);
+margin: 0 16px;
+}
+
+.card-body {
+padding: 12px 16px 14px;
+}
+
+/* TIMELINE */
+.timeline {
+display: flex;
+flex-direction: column;
+gap: 0;
+}
+
+.timeline-item {
+display: flex;
+gap: 14px;
+position: relative;
+}
+
+.timeline-item:not(:last-child)::before {
+content: ‘’;
+position: absolute;
+left: 31px;
+top: 28px;
+bottom: -8px;
+width: 1px;
+background: rgba(255,255,255,0.08);
+}
+
+.timeline-time {
+flex-shrink: 0;
+width: 48px;
+text-align: right;
+padding-top: 6px;
+}
+
+.time-label {
+font-family: ‘Barlow Condensed’, sans-serif;
+font-size: 13px;
+font-weight: 600;
+color: var(–gold);
+line-height: 1;
+}
+
+.time-sub {
+font-size: 10px;
+color: var(–gray);
+font-family: ‘Barlow Condensed’, sans-serif;
+}
+
+.timeline-dot {
+flex-shrink: 0;
+width: 12px;
+height: 12px;
+border-radius: 50%;
+background: var(–gold);
+margin-top: 8px;
+border: 2px solid var(–surface);
+position: relative;
+z-index: 1;
+}
+
+.timeline-dot.gray { background: var(–gray); }
+.timeline-dot.success { background: var(–success); }
+
+.timeline-content {
+flex: 1;
+background: var(–surface2);
+border-radius: 8px;
+padding: 10px 12px;
+margin-bottom: 8px;
+}
+
+.timeline-name {
+font-family: ‘Barlow Condensed’, sans-serif;
+font-weight: 700;
+font-size: 14px;
+color: var(–white);
+letter-spacing: 0.3px;
+}
+
+.timeline-room {
+font-size: 12px;
+color: var(–gold);
+margin-top: 2px;
+font-family: ‘Barlow Condensed’, sans-serif;
+}
+
+.timeline-guests {
+font-size: 11px;
+color: var(–gray);
+margin-top: 2px;
+}
+
+/* LOADING / EMPTY */
+.loading-box {
+display: flex;
+flex-direction: column;
+align-items: center;
+justify-content: center;
+padding: 40px 20px;
+gap: 12px;
+color: var(–gray);
+}
+
+.spinner {
+width: 28px;
+height: 28px;
+border: 2px solid rgba(212,148,10,0.2);
+border-top-color: var(–gold);
+border-radius: 50%;
+animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.loading-text {
+font-family: ‘Barlow Condensed’, sans-serif;
+font-size: 13px;
+letter-spacing: 1px;
+text-transform: uppercase;
+color: var(–gray);
+}
+
+.empty-box {
+display: flex;
+flex-direction: column;
+align-items: center;
+justify-content: center;
+padding: 40px 20px;
+gap: 10px;
+color: var(–gray);
+text-align: center;
+}
+
+.empty-box svg {
+opacity: 0.3;
+width: 40px;
+height: 40px;
+stroke: var(–gray);
+}
+
+.empty-text {
+font-family: ‘Barlow Condensed’, sans-serif;
+font-size: 14px;
+letter-spacing: 0.5px;
+text-transform: uppercase;
+color: var(–gray);
+opacity: 0.6;
+}
+
+/* API CONFIG BANNER */
+.config-banner {
+background: rgba(212,148,10,0.1);
+border: 1px solid rgba(212,148,10,0.3);
+border-radius: 10px;
+padding: 12px 14px;
+margin-bottom: 14px;
+display: flex;
+align-items: center;
+gap: 10px;
+}
+
+.config-banner svg {
+flex-shrink: 0;
+width: 18px;
+height: 18px;
+stroke: var(–gold);
+}
+
+.config-banner-text {
+font-size: 12px;
+color: var(–gold);
+font-family: ‘Barlow Condensed’, sans-serif;
+letter-spacing: 0.3px;
+}
+
+.config-banner-text strong {
+display: block;
+font-size: 13px;
+margin-bottom: 1px;
+}
+
+/* NOTITIES */
+.note-input-area {
+background: var(–surface);
+border-radius: 12px;
+padding: 14px;
+margin-bottom: 14px;
+border: 1px solid rgba(255,255,255,0.06);
+}
+
+.note-input {
+width: 100%;
+background: var(–surface2);
+border: 1px solid rgba(255,255,255,0.08);
+border-radius: 8px;
+padding: 12px;
+color: var(–white);
+font-family: ‘Barlow’, sans-serif;
+font-size: 15px;
+resize: none;
+min-height: 80px;
+outline: none;
+transition: border-color 0.2s;
+}
+
+.note-input:focus { border-color: var(–gold); }
+.note-input::placeholder { color: var(–gray); opacity: 0.5; }
+
+.note-input-footer {
+display: flex;
+align-items: center;
+justify-content: space-between;
+margin-top: 10px;
+}
+
+.note-category {
+display: flex;
+gap: 6px;
+}
+
+.cat-btn {
+padding: 5px 10px;
+border-radius: 6px;
+border: 1px solid rgba(255,255,255,0.1);
+background: transparent;
+color: var(–gray);
+font-family: ‘Barlow Condensed’, sans-serif;
+font-size: 11px;
+font-weight: 600;
+letter-spacing: 0.5px;
+text-transform: uppercase;
+cursor: pointer;
+transition: all 0.15s;
+}
+
+.cat-btn.active, .cat-btn:active {
+background: var(–gold);
+color: var(–navy-dark);
+border-color: var(–gold);
+}
+
+.btn-add-note {
+background: var(–gold);
+color: var(–navy-dark);
+font-family: ‘Barlow Condensed’, sans-serif;
+font-weight: 700;
+font-size: 13px;
+letter-spacing: 1px;
+text-transform: uppercase;
+border: none;
+border-radius: 8px;
+padding: 10px 18px;
+cursor: pointer;
+display: flex;
+align-items: center;
+gap: 6px;
+transition: all 0.15s;
+}
+
+.btn-add-note:active { background: var(–gold-light); transform: scale(0.98); }
+
+.btn-add-note svg {
+width: 14px; height: 14px;
+stroke: var(–navy-dark);
+stroke-width: 2.5;
+}
+
+/* NOTE ITEMS */
+.note-item {
+background: var(–surface);
+border-radius: 10px;
+padding: 12px 14px;
+margin-bottom: 8px;
+border-left: 3px solid var(–gold);
+display: flex;
+align-items: flex-start;
+justify-content: space-between;
+gap: 10px;
+animation: slideIn 0.2s ease;
+}
+
+.note-item.todo { border-left-color: var(–gold); }
+.note-item.info { border-left-color: var(–gray); }
+.note-item.urgent { border-left-color: var(–danger); }
+
+@keyframes slideIn {
+from { opacity: 0; transform: translateY(-6px); }
+to { opacity: 1; transform: translateY(0); }
+}
+
+.note-text {
+flex: 1;
+font-size: 14px;
+color: var(–white);
+line-height: 1.4;
+}
+
+.note-footer {
+display: flex;
+align-items: center;
+gap: 8px;
+margin-top: 6px;
+}
+
+.note-time {
+font-size: 10px;
+color: var(–gray);
+font-family: ‘Barlow Condensed’, sans-serif;
+letter-spacing: 0.3px;
+}
+
+.note-cat-label {
+font-size: 9px;
+font-family: ‘Barlow Condensed’, sans-serif;
+font-weight: 700;
+letter-spacing: 1px;
+text-transform: uppercase;
+padding: 2px 7px;
+border-radius: 4px;
+}
+
+.note-cat-label.todo { background: rgba(212,148,10,0.15); color: var(–gold); }
+.note-cat-label.info { background: rgba(138,155,176,0.15); color: var(–gray); }
+.note-cat-label.urgent { background: rgba(224,82,82,0.15); color: var(–danger); }
+
+.btn-delete {
+background: none;
+border: none;
+cursor: pointer;
+padding: 4px;
+color: var(–gray);
+opacity: 0.4;
+transition: opacity 0.15s;
+flex-shrink: 0;
+}
+
+.btn-delete:active { opacity: 1; color: var(–danger); }
+.btn-delete svg { width: 14px; height: 14px; stroke: currentColor; }
+
+/* AANVRAGEN */
+.request-card {
+background: var(–surface);
+border-radius: 12px;
+padding: 14px 16px;
+margin-bottom: 10px;
+border: 1px solid rgba(255,255,255,0.06);
+cursor: pointer;
+transition: border-color 0.2s;
+}
+
+.request-card:active { border-color: var(–gold); }
+
+.request-header {
+display: flex;
+align-items: flex-start;
+justify-content: space-between;
+gap: 8px;
+margin-bottom: 8px;
+}
+
+.request-name {
+font-family: ‘Barlow Condensed’, sans-serif;
+font-weight: 700;
+font-size: 16px;
+color: var(–white);
+letter-spacing: 0.3px;
+}
+
+.request-event {
+font-size: 12px;
+color: var(–gray);
+margin-top: 2px;
+font-family: ‘Barlow’, sans-serif;
+}
+
+.request-details {
+display: flex;
+gap: 16px;
+margin-top: 8px;
+padding-top: 8px;
+border-top: 1px solid rgba(255,255,255,0.06);
+}
+
+.request-detail {
+display: flex;
+align-items: center;
+gap: 5px;
+font-size: 12px;
+color: var(–gray);
+font-family: ‘Barlow Condensed’, sans-serif;
+}
+
+.request-detail svg {
+width: 12px; height: 12px;
+stroke: var(–gold);
+opacity: 0.7;
+}
+
+/* SETTINGS */
+.settings-card {
+background: var(–surface);
+border-radius: 12px;
+margin-bottom: 12px;
+overflow: hidden;
+border: 1px solid rgba(255,255,255,0.06);
+}
+
+.settings-title {
+font-family: ‘Barlow Condensed’, sans-serif;
+font-weight: 700;
+font-size: 11px;
+letter-spacing: 1.5px;
+text-transform: uppercase;
+color: var(–gray);
+padding: 12px 16px 8px;
+}
+
+.settings-row {
+display: flex;
+align-items: center;
+justify-content: space-between;
+padding: 12px 16px;
+border-top: 1px solid rgba(255,255,255,0.05);
+gap: 12px;
+}
+
+.settings-label {
+font-family: ‘Barlow’, sans-serif;
+font-size: 14px;
+color: var(–white);
+}
+
+.settings-label small {
+display: block;
+font-size: 11px;
+color: var(–gray);
+margin-top: 1px;
+font-family: ‘Barlow Condensed’, sans-serif;
+letter-spacing: 0.3px;
+}
+
+.settings-input {
+background: var(–surface2);
+border: 1px solid rgba(255,255,255,0.1);
+border-radius: 6px;
+padding: 8px 12px;
+color: var(–white);
+font-family: ‘Barlow Condensed’, sans-serif;
+font-size: 13px;
+width: 180px;
+outline: none;
+transition: border-color 0.2s;
+}
+
+.settings-input:focus { border-color: var(–gold); }
+
+.btn-save {
+background: var(–gold);
+color: var(–navy-dark);
+font-family: ‘Barlow Condensed’, sans-serif;
+font-weight: 700;
+font-size: 14px;
+letter-spacing: 1px;
+text-transform: uppercase;
+border: none;
+border-radius: 8px;
+padding: 12px;
+width: 100%;
+cursor: pointer;
+margin-top: 4px;
+transition: background 0.15s;
+}
+
+.btn-save:active { background: var(–gold-light); }
+
+/* STATUS TAG */
+.status-dot {
+display: inline-block;
+width: 8px; height: 8px;
+border-radius: 50%;
+background: var(–success);
+margin-right: 6px;
+}
+
+.status-dot.red { background: var(–danger); }
+
+.api-status {
+font-family: ‘Barlow Condensed’, sans-serif;
+font-size: 13px;
+color: var(–gray);
+padding: 8px 16px;
+display: flex;
+align-items: center;
+gap: 6px;
+}
+
+/* TODAY SUMMARY */
+.today-summary {
+display: grid;
+grid-template-columns: 1fr 1fr 1fr;
+gap: 8px;
+margin-bottom: 14px;
+}
+
+.summary-card {
+background: var(–surface);
+border-radius: 10px;
+padding: 12px 10px;
+text-align: center;
+border: 1px solid rgba(255,255,255,0.06);
+}
+
+.summary-num {
+font-family: ‘Anton’, sans-serif;
+font-size: 28px;
+color: var(–gold);
+line-height: 1;
+}
+
+.summary-label {
+font-family: ‘Barlow Condensed’, sans-serif;
+font-size: 10px;
+color: var(–gray);
+text-transform: uppercase;
+letter-spacing: 0.5px;
+margin-top: 3px;
+}
+
+/* REFRESH BTN */
+.btn-refresh {
+background: none;
+border: 1px solid rgba(255,255,255,0.1);
+border-radius: 6px;
+padding: 6px 10px;
+color: var(–gray);
+font-family: ‘Barlow Condensed’, sans-serif;
+font-size: 11px;
+font-weight: 600;
+letter-spacing: 0.5px;
+text-transform: uppercase;
+cursor: pointer;
+display: flex;
+align-items: center;
+gap: 5px;
+transition: all 0.15s;
+}
+
+.btn-refresh:active { border-color: var(–gold); color: var(–gold); }
+.btn-refresh svg { width: 12px; height: 12px; stroke: currentColor; }
+.btn-refresh.spinning svg { animation: spin 0.8s linear infinite; }
+
+/* DATE NAVIGATOR */
+.date-nav {
+display: flex;
+align-items: center;
+justify-content: space-between;
+background: var(–surface);
+border-radius: 12px;
+margin-bottom: 12px;
+padding: 4px;
+border: 1px solid rgba(255,255,255,0.06);
+}
+
+.date-nav-arrow {
+background: none;
+border: none;
+width: 42px;
+height: 42px;
+display: flex;
+align-items: center;
+justify-content: center;
+cursor: pointer;
+border-radius: 8px;
+transition: background 0.15s;
+color: var(–white);
+}
+
+.date-nav-arrow:active { background: var(–surface2); }
+.date-nav-arrow svg { width: 20px; height: 20px; stroke: var(–gold); }
+
+.date-nav-center {
+flex: 1;
+text-align: center;
+cursor: pointer;
+padding: 6px 0;
+}
+
+.date-nav-day {
+font-family: ‘Anton’, sans-serif;
+font-size: 16px;
+letter-spacing: 1.5px;
+color: var(–white);
+line-height: 1;
+}
+
+.date-nav-full {
+font-family: ‘Barlow Condensed’, sans-serif;
+font-size: 12px;
+color: var(–gold);
+margin-top: 2px;
+letter-spacing: 0.5px;
+}
+
+/* CALENDAR */
+.cal-header {
+display: flex;
+align-items: center;
+justify-content: space-between;
+padding: 8px 4px 10px;
+}
+
+.cal-nav {
+background: none;
+border: none;
+color: var(–gold);
+font-size: 22px;
+width: 36px;
+height: 36px;
+cursor: pointer;
+border-radius: 8px;
+display: flex;
+align-items: center;
+justify-content: center;
+transition: background 0.15s;
+line-height: 1;
+}
+
+.cal-nav:active { background: var(–surface2); }
+
+.cal-month-label {
+font-family: ‘Barlow Condensed’, sans-serif;
+font-weight: 700;
+font-size: 15px;
+letter-spacing: 1px;
+text-transform: uppercase;
+color: var(–white);
+}
+
+.cal-grid {
+display: grid;
+grid-template-columns: repeat(7, 1fr);
+gap: 3px;
+margin-bottom: 10px;
+}
+
+.cal-cell {
+aspect-ratio: 1;
+display: flex;
+align-items: center;
+justify-content: center;
+border-radius: 8px;
+font-family: ‘Barlow Condensed’, sans-serif;
+font-size: 13px;
+font-weight: 600;
+cursor: pointer;
+transition: all 0.15s;
+color: var(–white);
+border: 1px solid transparent;
+}
+
+.cal-cell.header {
+font-size: 10px;
+color: var(–gray);
+cursor: default;
+font-weight: 700;
+letter-spacing: 0.5px;
+}
+
+.cal-cell.empty { cursor: default; }
+
+.cal-cell.today {
+border-color: var(–gold);
+color: var(–gold);
+}
+
+.cal-cell.selected {
+background: var(–gold);
+color: var(–navy-dark);
+font-weight: 700;
+}
+
+.cal-cell.other-month { color: var(–gray); opacity: 0.4; }
+
+.cal-cell:not(.header):not(.empty):active { background: var(–surface2); }
+
+#calendarWrap {
+background: var(–surface);
+border-radius: 12px;
+padding: 4px 12px 12px;
+margin-bottom: 12px;
+border: 1px solid rgba(212,148,10,0.2);
+animation: slideDown 0.2s ease;
+}
+
+@keyframes slideDown {
+from { opacity: 0; transform: translateY(-6px); }
+to { opacity: 1; transform: translateY(0); }
+}
+
+.btn-today {
+width: 100%;
+background: transparent;
+border: 1px solid rgba(212,148,10,0.3);
+border-radius: 8px;
+color: var(–gold);
+font-family: ‘Barlow Condensed’, sans-serif;
+font-weight: 700;
+font-size: 13px;
+letter-spacing: 1px;
+text-transform: uppercase;
+padding: 9px;
+cursor: pointer;
+transition: all 0.15s;
+}
+
+.btn-today:active { background: rgba(212,148,10,0.1); }
+
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+
+<div class="header">
+  <div class="header-logo">
+    <svg viewBox="0 0 32 32" fill="none">
+      <rect x="4" y="18" width="24" height="10" fill="#D4940A" rx="1"/>
+      <rect x="8" y="10" width="16" height="10" fill="white" rx="1"/>
+      <rect x="13" y="3" width="4" height="8" fill="white" rx="1"/>
+      <rect x="9" y="12" width="4" height="4" fill="#132d4a"/>
+      <rect x="15" y="12" width="4" height="4" fill="#132d4a"/>
+    </svg>
+    <div>
+      <div class="header-title">STOOM <span>PLANNER</span></div>
+    </div>
+  </div>
+  <div class="header-date">
+    <strong id="todayDay">—</strong>
+    <span id="todayDate">—</span>
+  </div>
+</div>
+
+<!-- TABS -->
+
+<div class="tabs">
+  <div class="tab active" onclick="switchTab('vandaag')">
+    <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+      <rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
+    </svg>
+    <span class="tab-label">Vandaag</span>
+  </div>
+  <div class="tab" onclick="switchTab('notities')">
+    <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+    </svg>
+    <span class="tab-label">Notities</span>
+  </div>
+  <div class="tab" onclick="switchTab('aanvragen')">
+    <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+    </svg>
+    <span class="tab-label">Aanvragen</span>
+    <div class="tab-badge" id="aanvraagBadge" style="display:none">0</div>
+  </div>
+  <div class="tab" onclick="switchTab('instellingen')">
+    <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+    </svg>
+    <span class="tab-label">Instellingen</span>
+  </div>
+</div>
+
+<!-- CONTENT -->
+
+<div class="content">
+
+  <!-- VANDAAG -->
+
+  <div class="panel active" id="panel-vandaag">
+
+```
+<!-- DATE NAVIGATOR -->
+<div class="date-nav">
+  <button class="date-nav-arrow" onclick="shiftDate(-1)">
+    <svg viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+  </button>
+  <div class="date-nav-center" onclick="toggleCalendar()">
+    <div class="date-nav-day" id="navDay">Vandaag</div>
+    <div class="date-nav-full" id="navFull">—</div>
+  </div>
+  <button class="date-nav-arrow" onclick="shiftDate(1)">
+    <svg viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+  </button>
+</div>
+
+<!-- INLINE CALENDAR (toggle) -->
+<div id="calendarWrap" style="display:none">
+  <div class="cal-header">
+    <button class="cal-nav" onclick="calShiftMonth(-1)">‹</button>
+    <div class="cal-month-label" id="calMonthLabel">—</div>
+    <button class="cal-nav" onclick="calShiftMonth(1)">›</button>
+  </div>
+  <div class="cal-grid" id="calGrid"></div>
+  <button class="btn-today" onclick="goToday()">Vandaag</button>
+</div>
+
+<div class="today-summary">
+  <div class="summary-card">
+    <div class="summary-num" id="sumEvents">—</div>
+    <div class="summary-label">Events</div>
+  </div>
+  <div class="summary-card">
+    <div class="summary-num" id="sumGuests">—</div>
+    <div class="summary-label">Gasten</div>
+  </div>
+  <div class="summary-card">
+    <div class="summary-num" id="sumRooms">—</div>
+    <div class="summary-label">Ruimtes</div>
+  </div>
+</div>
+
+<div class="section-header">
+  <div>
+    <div class="section-title">Draaiboek</div>
+    <div class="section-sub" id="draaiboekSub">—</div>
+  </div>
+  <button class="btn-refresh" id="btnRefreshVandaag" onclick="loadVandaag()">
+    <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
+    </svg>
+    Ververs
+  </button>
+</div>
+
+<div id="vandaagContent">
+  <div class="loading-box"><div class="spinner"></div><div class="loading-text">Laden...</div></div>
+</div>
+```
+
+  </div>
+
+  <!-- NOTITIES -->
+
+  <div class="panel" id="panel-notities">
+    <div class="section-header">
+      <div>
+        <div class="section-title">Notities</div>
+        <div class="section-sub">Snelle aantekeningen</div>
+      </div>
+    </div>
+
+```
+<div class="note-input-area">
+  <textarea class="note-input" id="noteInput" placeholder="Typ je notitie..." rows="3"></textarea>
+  <div class="note-input-footer">
+    <div class="note-category">
+      <button class="cat-btn active" onclick="selectCat(this,'todo')" data-cat="todo">Todo</button>
+      <button class="cat-btn" onclick="selectCat(this,'info')" data-cat="info">Info</button>
+      <button class="cat-btn" onclick="selectCat(this,'urgent')" data-cat="urgent">Urgent</button>
+    </div>
+    <button class="btn-add-note" onclick="addNote()">
+      <svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      Voeg toe
+    </button>
+  </div>
+</div>
+
+<div id="notesList"></div>
+```
+
+  </div>
+
+  <!-- AANVRAGEN -->
+
+  <div class="panel" id="panel-aanvragen">
+    <div class="section-header">
+      <div>
+        <div class="section-title">Aanvragen</div>
+        <div class="section-sub">Openstaande event-aanvragen</div>
+      </div>
+      <button class="btn-refresh" id="btnRefreshAanvragen" onclick="loadAanvragen()">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
+        </svg>
+        Ververs
+      </button>
+    </div>
+    <div id="aanvragenContent">
+      <div class="loading-box"><div class="spinner"></div><div class="loading-text">Laden...</div></div>
+    </div>
+  </div>
+
+  <!-- INSTELLINGEN -->
+
+  <div class="panel" id="panel-instellingen">
+    <div class="section-title" style="margin-bottom:14px">Instellingen</div>
+
+```
+<div class="settings-card">
+  <div class="settings-title">MICE API</div>
+  <div class="settings-row">
+    <div class="settings-label">
+      API Key
+      <small>Uit MICE → Instellingen → Integraties</small>
+    </div>
+  </div>
+  <div class="settings-row">
+    <input type="password" class="settings-input" id="apiKeyInput" placeholder="mice_api_key..." style="width:100%">
+  </div>
+  <div class="settings-row">
+    <div class="settings-label">Het Lab<small>Locatie ID in MICE</small></div>
+    <input type="text" class="settings-input" id="locLab" placeholder="bv. 123" style="width:90px">
+  </div>
+  <div class="settings-row">
+    <div class="settings-label">De Werkplaats<small>Locatie ID in MICE</small></div>
+    <input type="text" class="settings-input" id="locWerkplaats" placeholder="bv. 124" style="width:90px">
+  </div>
+  <div class="settings-row">
+    <div class="settings-label">The BOS(S)<small>Locatie ID in MICE</small></div>
+    <input type="text" class="settings-input" id="locBoss" placeholder="bv. 125" style="width:90px">
+  </div>
+  <div class="api-status" id="apiStatus">
+    <span class="status-dot red" id="apiDot"></span>
+    <span id="apiStatusText">Niet geconfigureerd</span>
+  </div>
+</div>
+
+<button class="btn-save" onclick="saveSettings()">Opslaan & Verbinden</button>
+
+<div class="settings-card" style="margin-top:16px">
+  <div class="settings-title">Debug & Test</div>
+  <div class="settings-row" style="flex-direction:column;align-items:stretch;gap:8px">
+    <button class="btn-save" style="margin-top:0" onclick="testApi()">Test API Verbinding</button>
+    <pre id="debugOutput" style="display:none;background:var(--navy-dark);border-radius:8px;padding:12px;font-size:10px;color:#4caf82;white-space:pre-wrap;word-break:break-all;max-height:300px;overflow-y:auto;line-height:1.4;font-family:monospace"></pre>
+  </div>
+</div>
+
+<div class="settings-card" style="margin-top:12px">
+  <div class="settings-title">Over deze app</div>
+  <div class="settings-row">
+    <div class="settings-label">Versie<small>STOOM Planner App</small></div>
+    <div style="font-family:'Barlow Condensed',sans-serif;font-size:13px;color:var(--gray)">v1.0</div>
+  </div>
+  <div class="settings-row">
+    <div class="settings-label">Notities opgeslagen<small>Lokaal in deze browser</small></div>
+    <div style="font-family:'Barlow Condensed',sans-serif;font-size:13px;color:var(--gold)" id="noteCount">0</div>
+  </div>
+</div>
+```
+
+  </div>
+
+</div>
+
+<script>
+// ─── STATE ───────────────────────────────────────────
+let activeTab = 'vandaag';
+let selectedCat = 'todo';
+let notes = JSON.parse(localStorage.getItem('stoom_notes') || '[]');
+let settings = JSON.parse(localStorage.getItem('stoom_settings') || '{}');
+let selectedDate = new Date();
+let calViewMonth = new Date();
+let calOpen = false;
+
+const MICE_BASE = 'https://app.miceoperations.com/api/v1';
+
+const DAYS_NL = ['Zondag','Maandag','Dinsdag','Woensdag','Donderdag','Vrijdag','Zaterdag'];
+const DAYS_SHORT = ['Ma','Di','Wo','Do','Vr','Za','Zo'];
+const MONTHS_NL = ['januari','februari','maart','april','mei','juni','juli','augustus','september','oktober','november','december'];
+const MONTHS_SHORT = ['jan','feb','mrt','apr','mei','jun','jul','aug','sep','okt','nov','dec'];
+
+// ─── INIT ────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  updateDateNav();
+  loadSettings();
+  renderNotes();
+  loadVandaag();
+  loadAanvragen();
+});
+
+function updateDateNav() {
+  const now = new Date();
+  const isToday = selectedDate.toDateString() === now.toDateString();
+  const isTomorrow = new Date(now.getTime() + 86400000).toDateString() === selectedDate.toDateString();
+  const isYesterday = new Date(now.getTime() - 86400000).toDateString() === selectedDate.toDateString();
+
+  let label = DAYS_NL[selectedDate.getDay()];
+  if (isToday) label = 'Vandaag';
+  else if (isTomorrow) label = 'Morgen';
+  else if (isYesterday) label = 'Gisteren';
+
+  document.getElementById('navDay').textContent = label;
+  document.getElementById('navFull').textContent =
+    `${selectedDate.getDate()} ${MONTHS_SHORT[selectedDate.getMonth()]} ${selectedDate.getFullYear()}`;
+  document.getElementById('draaiboekSub').textContent =
+    `${selectedDate.getDate()} ${MONTHS_NL[selectedDate.getMonth()]} ${selectedDate.getFullYear()}`;
+
+  // update header date too
+  document.getElementById('todayDay').textContent = DAYS_NL[now.getDay()];
+  document.getElementById('todayDate').textContent = `${now.getDate()} ${MONTHS_SHORT[now.getMonth()]} ${now.getFullYear()}`;
+}
+
+function shiftDate(delta) {
+  selectedDate = new Date(selectedDate.getTime() + delta * 86400000);
+  calViewMonth = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), 1);
+  updateDateNav();
+  loadVandaag();
+  if (calOpen) renderCalGrid();
+}
+
+function goToday() {
+  selectedDate = new Date();
+  calViewMonth = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), 1);
+  updateDateNav();
+  loadVandaag();
+  toggleCalendar();
+}
+
+function toggleCalendar() {
+  calOpen = !calOpen;
+  const wrap = document.getElementById('calendarWrap');
+  wrap.style.display = calOpen ? 'block' : 'none';
+  if (calOpen) {
+    calViewMonth = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), 1);
+    renderCalendar();
+  }
+}
+
+function calShiftMonth(delta) {
+  calViewMonth = new Date(calViewMonth.getFullYear(), calViewMonth.getMonth() + delta, 1);
+  renderCalendar();
+}
+
+function renderCalendar() {
+  const monthNames = MONTHS_NL;
+  document.getElementById('calMonthLabel').textContent =
+    `${monthNames[calViewMonth.getMonth()]} ${calViewMonth.getFullYear()}`;
+  renderCalGrid();
+}
+
+function renderCalGrid() {
+  const grid = document.getElementById('calGrid');
+  const year = calViewMonth.getFullYear();
+  const month = calViewMonth.getMonth();
+  const today = new Date();
+  const todayStr = today.toDateString();
+  const selStr = selectedDate.toDateString();
+
+  let html = DAYS_SHORT.map(d => `<div class="cal-cell header">${d}</div>`).join('');
+
+  // First day of month (0=Sun, adjust to Mon-start)
+  const firstDay = new Date(year, month, 1).getDay();
+  const startOffset = (firstDay === 0) ? 6 : firstDay - 1;
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const daysInPrevMonth = new Date(year, month, 0).getDate();
+
+  // Prev month days
+  for (let i = startOffset - 1; i >= 0; i--) {
+    const d = daysInPrevMonth - i;
+    const dt = new Date(year, month - 1, d);
+    html += `<div class="cal-cell other-month" onclick="pickDate(${dt.getTime()})">${d}</div>`;
+  }
+
+  // Current month days
+  for (let d = 1; d <= daysInMonth; d++) {
+    const dt = new Date(year, month, d);
+    const dtStr = dt.toDateString();
+    let cls = 'cal-cell';
+    if (dtStr === selStr) cls += ' selected';
+    else if (dtStr === todayStr) cls += ' today';
+    html += `<div class="${cls}" onclick="pickDate(${dt.getTime()})">${d}</div>`;
+  }
+
+  // Next month fill
+  const totalCells = startOffset + daysInMonth;
+  const remaining = totalCells % 7 === 0 ? 0 : 7 - (totalCells % 7);
+  for (let d = 1; d <= remaining; d++) {
+    const dt = new Date(year, month + 1, d);
+    html += `<div class="cal-cell other-month" onclick="pickDate(${dt.getTime()})">${d}</div>`;
+  }
+
+  grid.innerHTML = html;
+}
+
+function pickDate(timestamp) {
+  selectedDate = new Date(timestamp);
+  calViewMonth = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), 1);
+  updateDateNav();
+  loadVandaag();
+  toggleCalendar();
+}
+
+// ─── TABS ────────────────────────────────────────────
+function switchTab(tab) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  const tabs = ['vandaag','notities','aanvragen','instellingen'];
+  document.querySelectorAll('.tab')[tabs.indexOf(tab)].classList.add('active');
+  document.getElementById('panel-' + tab).classList.add('active');
+  activeTab = tab;
+}
+
+// ─── SETTINGS ────────────────────────────────────────
+function loadSettings() {
+  if (settings.apiKey) {
+    document.getElementById('apiKeyInput').value = settings.apiKey;
+    document.getElementById('locLab').value = settings.locLab || '';
+    document.getElementById('locWerkplaats').value = settings.locWerkplaats || '';
+    document.getElementById('locBoss').value = settings.locBoss || '';
+    setApiStatus(true);
+  }
+}
+
+function saveSettings() {
+  const key = document.getElementById('apiKeyInput').value.trim();
+  if (!key) { alert('Vul een API key in.'); return; }
+  settings = {
+    apiKey: key,
+    locLab: document.getElementById('locLab').value.trim(),
+    locWerkplaats: document.getElementById('locWerkplaats').value.trim(),
+    locBoss: document.getElementById('locBoss').value.trim()
+  };
+  localStorage.setItem('stoom_settings', JSON.stringify(settings));
+  setApiStatus(true);
+  loadVandaag();
+  loadAanvragen();
+  switchTab('vandaag');
+}
+
+// Returns array of {id, name} for configured locations
+function getLocaties() {
+  const locs = [
+    { id: settings.locLab, name: 'Het Lab' },
+    { id: settings.locWerkplaats, name: 'De Werkplaats' },
+    { id: settings.locBoss, name: 'The BOS(S)' }
+  ];
+  return locs.filter(l => l.id);
+}
+
+function setApiStatus(ok) {
+  document.getElementById('apiDot').className = 'status-dot' + (ok ? '' : ' red');
+  document.getElementById('apiStatusText').textContent = ok ? 'Geconfigureerd' : 'Niet geconfigureerd';
+}
+
+// ─── MICE API ─────────────────────────────────────────
+async function miceGet(path) {
+  if (!settings.apiKey) throw new Error('Geen API key');
+  // MICE gebruikt X-Authorization: Basic [key]
+  const res = await fetch(`${MICE_BASE}${path}`, {
+    headers: {
+      'X-Authorization': `Basic ${settings.apiKey}`,
+      'Content-Type': 'application/json',
+      'Accept': 'application/json'
+    }
+  });
+  if (!res.ok) {
+    const errText = await res.text().catch(() => '');
+    throw new Error(`HTTP ${res.status}: ${errText.substring(0, 200)}`);
+  }
+  return res.json();
+}
+
+// Debug: test API en toon raw response
+async function testApi() {
+  const debugEl = document.getElementById('debugOutput');
+  debugEl.textContent = 'Bezig...';
+  debugEl.style.display = 'block';
+  try {
+    const res = await fetch(`${MICE_BASE}/events?limit=3&page=1`, {
+      headers: {
+        'X-Authorization': `Basic ${settings.apiKey}`,
+        'Accept': 'application/json'
+      }
+    });
+    const text = await res.text();
+    debugEl.textContent = `Status: ${res.status}
+
+Response:
+${JSON.stringify(JSON.parse(text), null, 2).substring(0, 1500)}`;
+  } catch(e) {
+    debugEl.textContent = `Fout: ${e.message}`;
+  }
+}
+
+// ─── VANDAAG ──────────────────────────────────────────
+async function loadVandaag() {
+  const btn = document.getElementById('btnRefreshVandaag');
+  const el = document.getElementById('vandaagContent');
+  btn.classList.add('spinning');
+  el.innerHTML = '<div class="loading-box"><div class="spinner"></div><div class="loading-text">MICE raadplegen...</div></div>';
+
+  if (!settings.apiKey) {
+    el.innerHTML = noBannerHtml();
+    btn.classList.remove('spinning');
+    return;
+  }
+
+  try {
+    const today = selectedDate.toISOString().split('T')[0];
+    const data = await miceGet(`/events?limit=100&page=1&include_activities=true&include_location=true`);
+
+    // Ontdek de juiste array-sleutel in de response
+    let allEvents = [];
+    if (Array.isArray(data)) {
+      allEvents = data;
+    } else if (Array.isArray(data.data)) {
+      allEvents = data.data;
+    } else if (Array.isArray(data.events)) {
+      allEvents = data.events;
+    } else {
+      // Zoek eerste array in response
+      for (const key of Object.keys(data || {})) {
+        if (Array.isArray(data[key])) { allEvents = data[key]; break; }
+      }
+    }
+
+    // Filter op geselecteerde datum — probeer alle mogelijke datumvelden
+    const events = allEvents.filter(ev => {
+      const fields = [ev.date, ev.start_date, ev.datetime_start, ev.datetime_end, ev.starts_at, ev.event_date];
+      return fields.some(d => d && String(d).startsWith(today));
+    });
+
+    renderVandaag(events.length ? events : []);
+  } catch(e) {
+    el.innerHTML = `<div class="empty-box" style="text-align:left;padding:16px">
+      <div style="font-family:'Barlow Condensed',sans-serif;font-size:13px;color:var(--danger);margin-bottom:8px;text-transform:uppercase;letter-spacing:0.5px">⚠ API Fout</div>
+      <div style="font-size:12px;color:var(--gray);line-height:1.5;word-break:break-all">${e.message}</div>
+      <div style="margin-top:12px;font-size:11px;color:var(--gray)">Ga naar Instellingen → Test API voor details.</div>
+    </div>`;
+  }
+  btn.classList.remove('spinning');
+}
+
+function noBannerHtml() {
+  return `<div class="config-banner">
+    <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+    <div class="config-banner-text"><strong>API key vereist</strong>Ga naar Instellingen om je MICE API key in te vullen.</div>
+  </div>`;
+}
+
+// Ruimte-kleuren per locatienaam
+const ROOM_COLORS = {
+  'Het Lab': '#D4940A',
+  'De Werkplaats': '#4caf82',
+  'The BOS(S)': '#6b9fd4'
+};
+
+function renderVandaag(events) {
+  const el = document.getElementById('vandaagContent');
+
+  if (!events || events.length === 0) {
+    document.getElementById('sumEvents').textContent = '0';
+    document.getElementById('sumGuests').textContent = '0';
+    document.getElementById('sumRooms').textContent = '0';
+    el.innerHTML = `<div class="empty-box"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.5" stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg><div class="empty-text">Geen events vandaag</div></div>`;
+    return;
+  }
+
+  // Totalen
+  const totalGuests = events.reduce((s, ev) => s + (ev.guests || ev.number_of_guests || 0), 0);
+  const activeRooms = new Set(events.map(ev => ev.location?.name || '').filter(Boolean));
+  document.getElementById('sumEvents').textContent = events.length;
+  document.getElementById('sumGuests').textContent = totalGuests || '—';
+  document.getElementById('sumRooms').textContent = activeRooms.size || '—';
+
+  // Groepeer per ruimte
+  const locaties = [
+    { name: 'Het Lab', id: settings.locLab },
+    { name: 'De Werkplaats', id: settings.locWerkplaats },
+    { name: 'The BOS(S)', id: settings.locBoss }
+  ];
+
+  // Match events aan ruimtes (op location.name of location_id)
+  function eventsForRoom(loc) {
+    return events.filter(ev => {
+      const locName = ev.location?.name || '';
+      const locId = String(ev.location?.id || ev.location_id || '');
+      return locName === loc.name || (loc.id && locId === loc.id);
+    });
+  }
+
+  // Events zonder bekende ruimte
+  const matchedIds = new Set();
+  const sections = locaties.map(loc => {
+    const roomEvents = eventsForRoom(loc);
+    roomEvents.forEach(ev => matchedIds.add(ev.id));
+    return { loc, events: roomEvents };
+  });
+
+  const overige = events.filter(ev => !matchedIds.has(ev.id));
+  if (overige.length) sections.push({ loc: { name: 'Overige', id: null }, events: overige });
+
+  // Render
+  let html = '';
+  sections.forEach(({ loc, events: roomEvents }) => {
+    if (!roomEvents.length) {
+      // Toon lege ruimte alleen als ID is ingevuld
+      if (!loc.id) return;
+    }
+    const color = ROOM_COLORS[loc.name] || 'var(--gray)';
+    html += `
+      <div style="margin-bottom:18px">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+          <div style="width:3px;height:20px;border-radius:2px;background:${color};flex-shrink:0"></div>
+          <div style="font-family:'Anton',sans-serif;font-size:15px;letter-spacing:1.5px;color:${color}">${loc.name.toUpperCase()}</div>
+          <div style="font-family:'Barlow Condensed',sans-serif;font-size:11px;color:var(--gray);margin-left:auto">${roomEvents.length} event${roomEvents.length !== 1 ? 's' : ''}</div>
+        </div>`;
+
+    if (!roomEvents.length) {
+      html += `<div style="background:var(--surface);border-radius:8px;padding:14px 16px;font-family:'Barlow Condensed',sans-serif;font-size:13px;color:var(--gray);letter-spacing:0.3px">Geen events vandaag</div>`;
+    } else {
+      html += `<div class="timeline">`;
+      // Verzamel activiteiten voor deze ruimte
+      let acts = [];
+      roomEvents.forEach(ev => {
+        const evActs = ev.activities || [];
+        if (evActs.length) {
+          evActs.forEach(a => acts.push({ ...a, _event: ev }));
+        } else {
+          acts.push({
+            datetime_start: ev.date || ev.start_date || ev.datetime_start,
+            name: ev.name || ev.title || 'Event',
+            _event: ev
+          });
+        }
+      });
+      acts.sort((a, b) => (a.datetime_start || '').localeCompare(b.datetime_start || ''));
+
+      acts.forEach((a, i) => {
+        const time = formatTime(a.datetime_start);
+        const guests = a._event?.guests || a._event?.number_of_guests || '';
+        const evName = a.name || a._event?.name || 'Activiteit';
+        html += `
+          <div class="timeline-item">
+            <div class="timeline-time"><div class="time-label" style="color:${color}">${time}</div></div>
+            <div class="timeline-dot" style="background:${color}"></div>
+            <div class="timeline-content">
+              <div class="timeline-name">${evName}</div>
+              ${guests ? `<div class="timeline-guests">${guests} gasten</div>` : ''}
+            </div>
+          </div>`;
+      });
+      html += `</div>`;
+    }
+    html += `</div>`;
+  });
+
+  el.innerHTML = html || `<div class="empty-box"><div class="empty-text">Geen events vandaag</div></div>`;
+}
+
+function formatTime(dt) {
+  if (!dt) return '—:——';
+  const d = new Date(dt);
+  if (isNaN(d)) return dt.substring(11,16) || '—:——';
+  return d.toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit' });
+}
+
+// ─── AANVRAGEN ────────────────────────────────────────
+async function loadAanvragen() {
+  const btn = document.getElementById('btnRefreshAanvragen');
+  const el = document.getElementById('aanvragenContent');
+  btn.classList.add('spinning');
+  el.innerHTML = '<div class="loading-box"><div class="spinner"></div><div class="loading-text">Aanvragen ophalen...</div></div>';
+
+  if (!settings.apiKey) {
+    el.innerHTML = noBannerHtml();
+    btn.classList.remove('spinning');
+    return;
+  }
+
+  try {
+    // Try requests/leads endpoint
+    const data = await miceGet('/events?limit=50&page=1&status=request');
+    const events = data.data || data.events || data || [];
+    renderAanvragen(events);
+  } catch(e) {
+    try {
+      // Fallback: get all and filter by status
+      const data = await miceGet('/events?limit=100&page=1');
+      const events = data.data || data.events || data || [];
+      const requests = events.filter(ev => {
+        const s = (ev.status || '').toLowerCase();
+        return s === 'request' || s === 'aanvraag' || s === 'option' || s === 'optie';
+      });
+      renderAanvragen(requests);
+    } catch(e2) {
+      el.innerHTML = `<div class="empty-box"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.5" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg><div class="empty-text">API fout: ${e2.message}</div></div>`;
+    }
+  }
+  btn.classList.remove('spinning');
+}
+
+function renderAanvragen(events) {
+  const el = document.getElementById('aanvragenContent');
+  const badge = document.getElementById('aanvraagBadge');
+
+  if (!events || events.length === 0) {
+    badge.style.display = 'none';
+    el.innerHTML = `<div class="empty-box"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.5" stroke-linecap="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg><div class="empty-text">Geen openstaande aanvragen</div></div>`;
+    return;
+  }
+
+  badge.textContent = events.length;
+  badge.style.display = 'flex';
+
+  el.innerHTML = events.map(ev => {
+    const status = ev.status || 'request';
+    const statusClass = status === 'confirmed' ? 'confirmed' : (status === 'option' || status === 'optie' ? 'option' : 'pending');
+    const statusLabel = status === 'confirmed' ? 'Bevestigd' : (status === 'option' || status === 'optie' ? 'Optie' : 'Aanvraag');
+    const date = ev.date || ev.start_date || ev.datetime_start || '';
+    const dateDisplay = date ? new Date(date).toLocaleDateString('nl-NL', { day: 'numeric', month: 'short' }) : '—';
+    const guests = ev.guests || ev.number_of_guests || '—';
+    const contact = [ev.contact_first_name, ev.contact_last_name].filter(Boolean).join(' ') || ev.contact_name || '—';
+    const name = ev.name || ev.title || 'Naamloos event';
+
+    return `<div class="request-card">
+      <div class="request-header">
+        <div>
+          <div class="request-name">${name}</div>
+          <div class="request-event">${contact}</div>
+        </div>
+        <div class="pill ${statusClass}"><div class="pill-dot"></div>${statusLabel}</div>
+      </div>
+      <div class="request-details">
+        <div class="request-detail">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          ${dateDisplay}
+        </div>
+        <div class="request-detail">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          ${guests} gasten
+        </div>
+        ${ev.location?.name ? `<div class="request-detail"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>${ev.location.name}</div>` : ''}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ─── NOTITIES ─────────────────────────────────────────
+let activeCatBtn = null;
+
+function selectCat(btn, cat) {
+  document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  selectedCat = cat;
+}
+
+function addNote() {
+  const input = document.getElementById('noteInput');
+  const text = input.value.trim();
+  if (!text) return;
+
+  const note = {
+    id: Date.now(),
+    text,
+    cat: selectedCat,
+    time: new Date().toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit' })
+  };
+
+  notes.unshift(note);
+  localStorage.setItem('stoom_notes', JSON.stringify(notes));
+  input.value = '';
+  renderNotes();
+}
+
+function deleteNote(id) {
+  notes = notes.filter(n => n.id !== id);
+  localStorage.setItem('stoom_notes', JSON.stringify(notes));
+  renderNotes();
+}
+
+function renderNotes() {
+  const el = document.getElementById('notesList');
+  const countEl = document.getElementById('noteCount');
+  if (countEl) countEl.textContent = notes.length;
+
+  if (!notes.length) {
+    el.innerHTML = `<div class="empty-box"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.5" stroke-linecap="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg><div class="empty-text">Nog geen notities</div></div>`;
+    return;
+  }
+
+  el.innerHTML = notes.map(n => `
+    <div class="note-item ${n.cat}">
+      <div>
+        <div class="note-text">${escHtml(n.text)}</div>
+        <div class="note-footer">
+          <span class="note-time">${n.time}</span>
+          <span class="note-cat-label ${n.cat}">${n.cat === 'todo' ? 'Todo' : n.cat === 'info' ? 'Info' : 'Urgent'}</span>
+        </div>
+      </div>
+      <button class="btn-delete" onclick="deleteNote(${n.id})">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+      </button>
+    </div>
+  `).join('');
+}
+
+function escHtml(str) {
+  return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+// Enter = submit note
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter' && e.metaKey && activeTab === 'notities') addNote();
+});
+
+// ─── iOS INSTALL HINT ─────────────────────────────────
+function showiOSHint() {
+  const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
+  const isStandalone = window.navigator.standalone;
+  const dismissed = localStorage.getItem('stoom_install_dismissed');
+  if (!isIOS || isStandalone || dismissed) return;
+
+  const hint = document.createElement('div');
+  hint.style.cssText = `
+    position: fixed; bottom: 20px; left: 16px; right: 16px;
+    background: #1e3a56; border: 1px solid rgba(212,148,10,0.4);
+    border-radius: 14px; padding: 14px 16px;
+    display: flex; align-items: flex-start; gap: 12px;
+    z-index: 9999; box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+    animation: slideUp 0.3s ease;
+  `;
+  hint.innerHTML = `
+    <div style="font-size:24px;line-height:1">⬆️</div>
+    <div style="flex:1">
+      <div style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:14px;letter-spacing:0.5px;color:white;margin-bottom:3px">VOEG TOE AAN BEGINSCHERM</div>
+      <div style="font-size:12px;color:#8a9bb0;font-family:'Barlow',sans-serif;line-height:1.4">Tik op <strong style="color:#D4940A">Delen ↑</strong> in Safari en kies <strong style="color:#D4940A">"Zet op beginscherm"</strong> voor de app-ervaring.</div>
+    </div>
+    <button onclick="this.parentElement.remove();localStorage.setItem('stoom_install_dismissed','1')" style="background:none;border:none;color:#8a9bb0;font-size:20px;cursor:pointer;line-height:1;padding:0">×</button>
+  `;
+  document.body.appendChild(hint);
+  setTimeout(() => hint.style.opacity = '1', 100);
+}
+
+setTimeout(showiOSHint, 2000);
+</script>
+
+</body>
+</html>
