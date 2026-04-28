@@ -1505,12 +1505,6 @@ async function loadVandaag() {
   btn.classList.add('spinning');
   el.innerHTML = '<div class="loading-box"><div class="spinner"></div><div class="loading-text">MICE raadplegen...</div></div>';
 
-  if (!settings.apiKey) {
-    el.innerHTML = noBannerHtml();
-    btn.classList.remove('spinning');
-    return;
-  }
-
   try {
     const today = selectedDate.toISOString().split('T')[0];
     const data = await miceGet(`/events?limit=100&page=1&include_activities=true&include_location=true`);
@@ -1677,12 +1671,6 @@ async function loadAanvragen() {
   const el = document.getElementById('aanvragenContent');
   btn.classList.add('spinning');
   el.innerHTML = '<div class="loading-box"><div class="spinner"></div><div class="loading-text">Aanvragen ophalen...</div></div>';
-
-  if (!settings.apiKey) {
-    el.innerHTML = noBannerHtml();
-    btn.classList.remove('spinning');
-    return;
-  }
 
   try {
     // Try requests/leads endpoint
