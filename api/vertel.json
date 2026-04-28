@@ -1,0 +1,1 @@
+{ "functions": { "api/mice.js": { "maxDuration": 10 } } }
