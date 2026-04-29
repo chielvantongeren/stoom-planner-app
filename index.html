@@ -1665,7 +1665,7 @@ function renderVandaag(events) {
                 ${info.contact ? `<span style="font-family:'Barlow Condensed',sans-serif;font-size:12px;color:var(--gray)">👤 ${info.contact}</span>` : ''}
                 ${info.gasten ? `<span style="font-family:'Barlow Condensed',sans-serif;font-size:12px;color:var(--gray)">👥 ${info.gasten}</span>` : ''}
                 ${info.type ? `<span style="font-family:'Barlow Condensed',sans-serif;font-size:11px;color:var(--gray);opacity:0.6">${info.type}</span>` : ''}
-                <span style="font-family:'Barlow Condensed',sans-serif;font-size:12px;color:${info.setup ? 'var(--gold)' : 'var(--gray)'};opacity:${info.setup ? '0.8' : '0.5'}">⬡ ${info.setup || 'Opstelling onbekend'}</span>
+                ${info.setup ? `<span style="font-family:'Barlow Condensed',sans-serif;font-size:12px;color:var(--gold);opacity:0.8">⬡ ${info.setup}</span>` : ''}
               </div>`).join('')}
           </div>
         </div>`;
