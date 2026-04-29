@@ -1050,9 +1050,6 @@ document.head.appendChild(link);
     <div>
       <div class="header-title">STOOM <span>PLANNER</span></div>
     </div>
-  </div></div>
-  </div></div>
-  </div></div>
   </div>
   <div class="header-date">
     <strong id="todayDay">—</strong>
@@ -1553,7 +1550,9 @@ async function loadVandaag() {
       // Voeg events van deze datum toe
       pageEvents.forEach(ev => {
         const d = ev.datetime_start || ev.date || ev.start_date || '';
-        if (d.startsWith(today)) allEvents.push(ev);
+        const status = (ev.status || '').toLowerCase();
+        const skip = ['cancelled', 'option_expired', 'declined'];
+        if (d.startsWith(today) && !skip.includes(status)) allEvents.push(ev);
       });
 
       // Stop als de oudste event op deze pagina ouder is dan gevraagde datum
