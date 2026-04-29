@@ -958,8 +958,10 @@ document.head.appendChild(link);
   .cal-grid {
     display: grid;
     grid-template-columns: repeat(7, 1fr);
-    gap: 3px;
+    gap: 2px;
     margin-bottom: 10px;
+    width: 100%;
+    box-sizing: border-box;
   }
 
   .cal-cell {
@@ -967,14 +969,16 @@ document.head.appendChild(link);
     display: flex;
     align-items: center;
     justify-content: center;
-    border-radius: 8px;
+    border-radius: 6px;
     font-family: 'Barlow Condensed', sans-serif;
-    font-size: 13px;
+    font-size: 12px;
     font-weight: 600;
     cursor: pointer;
     transition: all 0.15s;
     color: var(--white);
     border: 1px solid transparent;
+    min-width: 0;
+    overflow: hidden;
   }
 
   .cal-cell.header {
@@ -1005,10 +1009,11 @@ document.head.appendChild(link);
   #calendarWrap {
     background: var(--surface);
     border-radius: 12px;
-    padding: 4px 12px 12px;
+    padding: 4px 8px 12px;
     margin-bottom: 12px;
     border: 1px solid rgba(212,148,10,0.2);
     animation: slideDown 0.2s ease;
+    overflow: hidden;
   }
 
   @keyframes slideDown {
