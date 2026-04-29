@@ -1265,6 +1265,48 @@ let calOpen = false;
 
 const MICE_BASE = '/api/mice';
 
+// ─── SUPABASE CONFIG ──────────────────────────────────
+const SUPABASE_URL = 'https://ugdrefzzsmnfhmqkqhfj.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_F0q63bu-2nO0Srqz3H3XgA_1K-_cr6D';
+
+async function sbGet(table, params = '') {
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/${table}?${params}&order=aangemaakt_op.desc`, {
+    headers: {
+      'apikey': SUPABASE_KEY,
+      'Authorization': `Bearer ${SUPABASE_KEY}`,
+      'Content-Type': 'application/json'
+    }
+  });
+  if (!res.ok) throw new Error(`Supabase GET ${res.status}`);
+  return res.json();
+}
+
+async function sbInsert(table, data) {
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/${table}`, {
+    method: 'POST',
+    headers: {
+      'apikey': SUPABASE_KEY,
+      'Authorization': `Bearer ${SUPABASE_KEY}`,
+      'Content-Type': 'application/json',
+      'Prefer': 'return=representation'
+    },
+    body: JSON.stringify(data)
+  });
+  if (!res.ok) throw new Error(`Supabase INSERT ${res.status}`);
+  return res.json();
+}
+
+async function sbDelete(table, id) {
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/${table}?id=eq.${id}`, {
+    method: 'DELETE',
+    headers: {
+      'apikey': SUPABASE_KEY,
+      'Authorization': `Bearer ${SUPABASE_KEY}`
+    }
+  });
+  if (!res.ok) throw new Error(`Supabase DELETE ${res.status}`);
+}
+
 const DAYS_NL = ['Zondag','Maandag','Dinsdag','Woensdag','Donderdag','Vrijdag','Zaterdag'];
 const DAYS_SHORT = ['Ma','Di','Wo','Do','Vr','Za','Zo'];
 const MONTHS_NL = ['januari','februari','maart','april','mei','juni','juli','augustus','september','oktober','november','december'];
@@ -1274,9 +1316,9 @@ const MONTHS_SHORT = ['jan','feb','mrt','apr','mei','jun','jul','aug','sep','okt
 document.addEventListener('DOMContentLoaded', () => {
   updateDateNav();
   loadSettings();
-  renderNotes();
+  loadNotes();
   loadVandaag();
-  loadAanvragen();
+  loadAanvragen(); // laadt op achtergrond zodat badge meteen klopt
 });
 
 function updateDateNav() {
@@ -1658,8 +1700,11 @@ function formatTime(dt) {
 async function loadAanvragen() {
   const btn = document.getElementById('btnRefreshAanvragen');
   const el = document.getElementById('aanvragenContent');
+  const isVisible = activeTab === 'aanvragen';
   btn.classList.add('spinning');
-  el.innerHTML = '<div class="loading-box"><div class="spinner"></div><div class="loading-text">Aanvragen ophalen...</div></div>';
+  if (isVisible) {
+    el.innerHTML = '<div class="loading-box"><div class="spinner"></div><div class="loading-text">Aanvragen ophalen...</div></div>';
+  }
 
   try {
     // Try requests/leads endpoint
@@ -1693,8 +1738,15 @@ function renderAanvragen(events) {
     return;
   }
 
-  badge.textContent = events.length;
-  badge.style.display = 'flex';
+  // Tel alleen echt openstaande aanvragen voor de badge
+  const openStatuses = ['unconfirmed', 'request', 'aanvraag', 'option', 'optie'];
+  const openCount = events.filter(ev => openStatuses.includes((ev.status || '').toLowerCase())).length;
+  if (openCount > 0) {
+    badge.textContent = openCount;
+    badge.style.display = 'flex';
+  } else {
+    badge.style.display = 'none';
+  }
 
   el.innerHTML = events.map(ev => {
     const status = ev.status || 'request';
@@ -1732,34 +1784,65 @@ function renderAanvragen(events) {
 // ─── NOTITIES ─────────────────────────────────────────
 let activeCatBtn = null;
 
+async function loadNotes() {
+  try {
+    const data = await sbGet('notities');
+    notes = data.map(n => ({
+      id: n.id,
+      text: n.tekst,
+      cat: n.categorie,
+      time: new Date(n.aangemaakt_op).toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit' }),
+      date: new Date(n.aangemaakt_op).toLocaleDateString('nl-NL', { day: 'numeric', month: 'short' })
+    }));
+    renderNotes();
+  } catch(e) {
+    // Fallback localStorage
+    notes = JSON.parse(localStorage.getItem('stoom_notes') || '[]');
+    renderNotes();
+  }
+}
+
 function selectCat(btn, cat) {
   document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
   selectedCat = cat;
 }
 
-function addNote() {
+async function addNote() {
   const input = document.getElementById('noteInput');
   const text = input.value.trim();
   if (!text) return;
-
-  const note = {
-    id: Date.now(),
-    text,
-    cat: selectedCat,
-    time: new Date().toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit' })
-  };
-
-  notes.unshift(note);
-  localStorage.setItem('stoom_notes', JSON.stringify(notes));
   input.value = '';
-  renderNotes();
+
+  try {
+    const result = await sbInsert('notities', {
+      tekst: text,
+      categorie: selectedCat
+    });
+    await loadNotes();
+  } catch(e) {
+    // Fallback naar localStorage
+    const note = {
+      id: Date.now(),
+      text,
+      cat: selectedCat,
+      time: new Date().toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit' })
+    };
+    notes.unshift(note);
+    localStorage.setItem('stoom_notes', JSON.stringify(notes));
+    renderNotes();
+  }
 }
 
-function deleteNote(id) {
-  notes = notes.filter(n => n.id !== id);
-  localStorage.setItem('stoom_notes', JSON.stringify(notes));
-  renderNotes();
+async function deleteNote(id) {
+  try {
+    await sbDelete('notities', id);
+    await loadNotes();
+  } catch(e) {
+    notes = notes.filter(n => n.id !== id);
+    localStorage.setItem('stoom_notes', JSON.stringify(notes));
+    renderNotes();
+  }
 }
 
 function renderNotes() {
@@ -1777,7 +1860,7 @@ function renderNotes() {
       <div>
         <div class="note-text">${escHtml(n.text)}</div>
         <div class="note-footer">
-          <span class="note-time">${n.time}</span>
+          <span class="note-time">${n.date ? n.date + ' · ' : ''}${n.time}</span>
           <span class="note-cat-label ${n.cat}">${n.cat === 'todo' ? 'Todo' : n.cat === 'info' ? 'Info' : 'Urgent'}</span>
         </div>
       </div>
