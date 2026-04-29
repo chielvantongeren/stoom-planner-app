@@ -2129,8 +2129,8 @@ function renderOmzet(events) {
 
   setTimeout(() => {
     const ctx = document.getElementById('omzetCanvas');
-    if (!ctx) return;
-    new Chart(ctx, {
+    if (!ctx || typeof Chart === 'undefined') return;
+    try { new Chart(ctx, {
       type: 'bar',
       data: {
         labels: ['J','F','M','A','M','J','J','A','S','O','N','D'],
@@ -2144,7 +2144,7 @@ function renderOmzet(events) {
           y: { ticks: { color: '#8a9bb0', font: { size: 9 }, callback: v => '€'+Math.round(v/1000)+'K' }, grid: { color: 'rgba(255,255,255,0.05)' } }
         }
       }
-    });
+    }); } catch(e) { console.warn('Chart error:', e); }
   }, 100);
 }
 
@@ -2295,5 +2295,6 @@ function showiOSHint() {
 
 setTimeout(showiOSHint, 2000);
 </script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 </body>
 </html>
