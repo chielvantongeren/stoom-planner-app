@@ -1671,15 +1671,31 @@ function renderVandaag(events) {
 
       acts.forEach((a, i) => {
         const time = formatTime(a.datetime_start);
+        const timeEnd = formatTime(a.datetime_end);
         const guests = a._event?.guests || a._event?.number_of_guests || '';
         const evName = a.name || a._event?.name || 'Activiteit';
+        const ev = a._event || {};
+
+        // Klant & contact
+        const klant = ev.group_name || ev.name || '';
+        const contact = [ev.contact_first_name, ev.contact_last_name].filter(Boolean).join(' ') || ev.reference || '';
+        const eventType = ev.event_type?.name || '';
+
         html += `
           <div class="timeline-item">
-            <div class="timeline-time"><div class="time-label" style="color:${color}">${time}</div></div>
+            <div class="timeline-time">
+              <div class="time-label" style="color:${color}">${time}</div>
+              ${timeEnd && timeEnd !== time ? `<div style="font-size:10px;color:var(--gray);font-family:'Barlow Condensed',sans-serif">${timeEnd}</div>` : ''}
+            </div>
             <div class="timeline-dot" style="background:${color}"></div>
             <div class="timeline-content">
               <div class="timeline-name">${evName}</div>
-              ${guests ? `<div class="timeline-guests">${guests} gasten</div>` : ''}
+              ${klant && klant !== evName ? `<div style="font-size:12px;color:var(--gold);font-family:'Barlow Condensed',sans-serif;margin-top:2px;font-weight:600">${klant}</div>` : ''}
+              ${contact ? `<div style="font-size:11px;color:var(--gray);font-family:'Barlow Condensed',sans-serif;margin-top:1px">👤 ${contact}</div>` : ''}
+              <div style="display:flex;align-items:center;gap:10px;margin-top:3px">
+                ${guests ? `<div style="font-size:11px;color:var(--gray);font-family:'Barlow Condensed',sans-serif">👥 ${guests} gasten</div>` : ''}
+                ${eventType ? `<div style="font-size:10px;color:var(--gray);font-family:'Barlow Condensed',sans-serif;opacity:0.6">${eventType}</div>` : ''}
+              </div>
             </div>
           </div>`;
       });
