@@ -2017,7 +2017,7 @@ async function loadDetails() {
   btn.classList.add('spinning');
   el.innerHTML = '<div class="loading-box"><div class="spinner"></div><div class="loading-text">Aanvragen ophalen...</div></div>';
   try {
-    const data = await miceGet('/events?limit=100&page=1&include_activities=true&include_location=true');
+    const data = await miceGet('/events?limit=25&page=1&include_activities=true&include_location=true');
     let events = [];
     if (Array.isArray(data)) events = data;
     else if (Array.isArray(data.data)) events = data.data;
@@ -2071,15 +2071,9 @@ async function loadOmzet() {
   el.dataset.loaded = '1';
   el.innerHTML = '<div class="loading-box"><div class="spinner"></div><div class="loading-text">Berekenen...</div></div>';
   try {
-    // Haal alle pagina's op
-    let all = [];
-    for (let p = 1; p <= 14; p++) {
-      const data = await miceGet(`/events?limit=25&page=${p}`);
-      const items = Array.isArray(data) ? data : (data.data || []);
-      if (!items.length) break;
-      all = all.concat(items);
-    }
-    renderOmzet(all);
+    const data = await miceGet('/events?limit=25&page=1');
+    const items = Array.isArray(data) ? data : (data.data || []);
+    renderOmzet(items);
   } catch(e) {
     el.innerHTML = `<div class="empty-box"><div class="empty-text">Fout: ${e.message}</div></div>`;
   }
@@ -2160,14 +2154,9 @@ async function loadBezetting() {
   el.dataset.loaded = '1';
   el.innerHTML = '<div class="loading-box"><div class="spinner"></div><div class="loading-text">Berekenen...</div></div>';
   try {
-    let all = [];
-    for (let p = 1; p <= 14; p++) {
-      const data = await miceGet(`/events?limit=25&page=${p}`);
-      const items = Array.isArray(data) ? data : (data.data || []);
-      if (!items.length) break;
-      all = all.concat(items);
-    }
-    renderBezetting(all);
+    const data = await miceGet('/events?limit=25&page=1');
+    const items = Array.isArray(data) ? data : (data.data || []);
+    renderBezetting(items);
   } catch(e) {
     el.innerHTML = `<div class="empty-box"><div class="empty-text">Fout: ${e.message}</div></div>`;
   }
@@ -2235,14 +2224,8 @@ async function doZoek(q) {
   if (!zoekCache.length) {
     el.innerHTML = '<div class="loading-box"><div class="spinner"></div><div class="loading-text">Events laden...</div></div>';
     try {
-      let all = [];
-      for (let p = 1; p <= 14; p++) {
-        const data = await miceGet(`/events?limit=25&page=${p}`);
-        const items = Array.isArray(data) ? data : (data.data || []);
-        if (!items.length) break;
-        all = all.concat(items);
-      }
-      zoekCache = all;
+      const data = await miceGet('/events?limit=25&page=1');
+      zoekCache = Array.isArray(data) ? data : (data.data || []);
     } catch(e) {
       el.innerHTML = `<div class="empty-box"><div class="empty-text">Fout: ${e.message}</div></div>`;
       return;
