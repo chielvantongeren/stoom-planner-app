@@ -1538,6 +1538,7 @@ function switchTab(tab) {
   if (idx !== -1) document.querySelectorAll('.tab')[idx].classList.add('active');
   document.getElementById('panel-' + tab).classList.add('active');
   activeTab = tab;
+  if (tab === 'details') loadDetails();
   if (tab === 'omzet') loadOmzet();
   if (tab === 'bezetting') loadBezetting();
 }
