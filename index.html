@@ -1605,12 +1605,7 @@ async function testApi() {
   debugEl.textContent = 'Bezig...';
   debugEl.style.display = 'block';
   try {
-    const res = await fetch(`${MICE_BASE}/events?limit=3&page=1`, {
-      headers: {
-        'X-Authorization': `Basic ${settings.apiKey}`,
-        'Accept': 'application/json'
-      }
-    });
+    const res = await fetch(`${MICE_BASE}?path=/events&limit=3&page=1`);
     const text = await res.text();
     debugEl.textContent = `Status: ${res.status}
 
@@ -2045,8 +2040,7 @@ function renderDetails(events) {
     const statusLabel = status === 'confirmed' ? 'Bevestigd' : status === 'option' ? 'Optie' : 'Aanvraag';
     const date = ev.datetime_start ? new Date(ev.datetime_start).toLocaleDateString('nl-NL',{day:'numeric',month:'short',year:'numeric'}) : '—';
     const contact = [ev.contact_first_name, ev.contact_last_name].filter(Boolean).join(' ') || ev.reference || '';
-    const msg = ev.booking_message ? ev.booking_message.substring(0,180).replace(/
-/g,' ') : '';
+    const msg = ev.booking_message ? ev.booking_message.substring(0,180).split('\n').join(' ') : '';
     const room = ev.location?.name || '';
     return `<div class="card">
       <div class="card-header">
