@@ -1843,7 +1843,7 @@ async function loadAanvragen() {
       const events = data.data || data.events || data || [];
       const requests = events.filter(ev => {
         const s = (ev.status || '').toLowerCase();
-        return s === 'request' || s === 'aanvraag' || s === 'option' || s === 'optie';
+        return s === 'unconfirmed' || s === 'option' || s === 'optie' || s === 'request' || s === 'aanvraag';
       });
       renderAanvragen(requests);
     } catch(e2) {
