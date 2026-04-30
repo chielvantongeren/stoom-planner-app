@@ -2066,85 +2066,159 @@ function renderDetails(events) {
 }
 
 // ─── OMZET ────────────────────────────────────────────
+let omzetAllEvents = [];
+let omzetJaar = new Date().getFullYear();
+let omzetChart = null;
+
 async function loadOmzet() {
   const el = document.getElementById('omzetContent');
   if (el.dataset.loaded) return;
   el.dataset.loaded = '1';
-  el.innerHTML = '<div class="loading-box"><div class="spinner"></div><div class="loading-text">Berekenen...</div></div>';
+  el.innerHTML = '<div class="loading-box"><div class="spinner"></div><div class="loading-text">Alle events laden (14 pagina's)...</div></div>';
   try {
-    const data = await miceGet('/events?limit=25&page=1');
-    const items = Array.isArray(data) ? data : (data.data || []);
-    renderOmzet(items);
+    let all = [];
+    for (let p = 1; p <= 14; p++) {
+      const data = await miceGet(`/events?limit=25&page=${p}`);
+      const items = Array.isArray(data) ? data : (data.data || []);
+      if (!items.length) break;
+      all = all.concat(items);
+      // Update loading indicator
+      el.innerHTML = `<div class="loading-box"><div class="spinner"></div><div class="loading-text">Laden... ${all.length} events</div></div>`;
+    }
+    omzetAllEvents = all;
+    omzetJaar = new Date().getFullYear();
+    renderOmzet();
   } catch(e) {
     el.innerHTML = `<div class="empty-box"><div class="empty-text">Fout: ${e.message}</div></div>`;
   }
 }
 
-function renderOmzet(events) {
+function renderOmzet() {
   const el = document.getElementById('omzetContent');
   const SKIP = ['cancelled','option_expired','declined'];
-  const active = events.filter(ev => !SKIP.includes((ev.status||'').toLowerCase()));
-
-  const totaal = active.reduce((s,ev) => s + (ev.total_price||0), 0);
-  const bevestigd = active.filter(ev => ev.status === 'confirmed').reduce((s,ev) => s + (ev.total_price||0), 0);
-  const open = active.filter(ev => ev.status !== 'confirmed').reduce((s,ev) => s + (ev.total_price||0), 0);
-
-  // Per ruimte
-  const perRuimte = {};
-  active.forEach(ev => {
-    const r = ev.location?.name || 'Onbekend';
-    perRuimte[r] = (perRuimte[r]||0) + (ev.total_price||0);
-  });
-  const maxRuimte = Math.max(...Object.values(perRuimte));
-
-  // Per maand (huidig jaar)
-  const year = new Date().getFullYear();
-  const maanden = Array(12).fill(0);
-  active.forEach(ev => {
-    const d = new Date(ev.datetime_start||'');
-    if (d.getFullYear() === year) maanden[d.getMonth()] += (ev.total_price||0);
-  });
-
   const ROOM_C = { 'Het Lab':'#D4940A','De Werkplaats':'#4caf82','De Bossroom':'#6b9fd4' };
+  const MONTHS_SHORT = ['jan','feb','mrt','apr','mei','jun','jul','aug','sep','okt','nov','dec'];
+
+  const active = omzetAllEvents.filter(ev => !SKIP.includes((ev.status||'').toLowerCase()));
+  const forYear = active.filter(ev => new Date(ev.datetime_start||'').getFullYear() === omzetJaar);
+
+  const totaal = forYear.reduce((s,ev) => s + (ev.total_price||0), 0);
+  const bevestigd = forYear.filter(ev => ev.status === 'confirmed').reduce((s,ev) => s + (ev.total_price||0), 0);
+  const openstaand = forYear.filter(ev => ev.status !== 'confirmed').reduce((s,ev) => s + (ev.total_price||0), 0);
+
+  // Per kwartaal
+  const kwartalen = [0,0,0,0];
+  const kwartaalBevestigd = [0,0,0,0];
+  forYear.forEach(ev => {
+    const m = new Date(ev.datetime_start||'').getMonth();
+    const kw = Math.floor(m/3);
+    kwartalen[kw] += (ev.total_price||0);
+    if (ev.status === 'confirmed') kwartaalBevestigd[kw] += (ev.total_price||0);
+  });
+
+  // Per maand
+  const maanden = Array(12).fill(0);
+  const maandenBevestigd = Array(12).fill(0);
+  forYear.forEach(ev => {
+    const m = new Date(ev.datetime_start||'').getMonth();
+    maanden[m] += (ev.total_price||0);
+    if (ev.status === 'confirmed') maandenBevestigd[m] += (ev.total_price||0);
+  });
+
+  // Per ruimte voor dit jaar
+  const perRuimte = {};
+  forYear.forEach(ev => {
+    const r = ev.location?.name || 'Onbekend';
+    if (!perRuimte[r]) perRuimte[r] = 0;
+    perRuimte[r] += (ev.total_price||0);
+  });
+  const maxRuimte = Math.max(...Object.values(perRuimte), 1);
+
+  // Jaren beschikbaar
+  const jaren = [...new Set(active.map(ev => new Date(ev.datetime_start||'').getFullYear()))].sort();
 
   el.innerHTML = `
+    <!-- Jaar navigator -->
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+      <button onclick="omzetJaar--;renderOmzet()" style="background:none;border:1px solid rgba(255,255,255,0.1);border-radius:6px;color:var(--gold);font-size:18px;width:32px;height:32px;cursor:pointer;display:flex;align-items:center;justify-content:center">‹</button>
+      <div style="font-family:'Anton',sans-serif;font-size:20px;letter-spacing:2px;color:var(--white)">${omzetJaar}</div>
+      <button onclick="omzetJaar++;renderOmzet()" style="background:none;border:1px solid rgba(255,255,255,0.1);border-radius:6px;color:var(--gold);font-size:18px;width:32px;height:32px;cursor:pointer;display:flex;align-items:center;justify-content:center">›</button>
+    </div>
+
+    <!-- Totalen -->
     <div class="today-summary" style="margin-bottom:14px">
       <div class="summary-card"><div class="summary-num">€${Math.round(bevestigd/1000)}K</div><div class="summary-label">Bevestigd</div></div>
-      <div class="summary-card"><div class="summary-num">€${Math.round(open/1000)}K</div><div class="summary-label">Openstaand</div></div>
+      <div class="summary-card"><div class="summary-num">€${Math.round(openstaand/1000)}K</div><div class="summary-label">Openstaand</div></div>
       <div class="summary-card"><div class="summary-num">€${Math.round(totaal/1000)}K</div><div class="summary-label">Totaal</div></div>
     </div>
-    <div class="section-header"><div class="section-title" style="font-size:14px">Per ruimte</div></div>
+
+    <!-- Kwartalen -->
+    <div style="font-family:'Anton',sans-serif;font-size:13px;letter-spacing:1px;color:var(--gray);margin-bottom:8px;text-transform:uppercase">Per kwartaal</div>
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:16px">
+      ${kwartalen.map((v,i) => {
+        const bev = kwartaalBevestigd[i];
+        const pct = totaal > 0 ? Math.round(v/totaal*100) : 0;
+        return `<div style="background:var(--surface);border-radius:8px;padding:10px 8px;text-align:center;border:1px solid rgba(255,255,255,0.06)">
+          <div style="font-family:'Barlow Condensed',sans-serif;font-size:10px;color:var(--gray);margin-bottom:4px">Q${i+1}</div>
+          <div style="font-family:'Anton',sans-serif;font-size:16px;color:var(--gold)">€${Math.round(v/1000)}K</div>
+          <div style="font-size:9px;color:var(--gray);font-family:'Barlow Condensed',sans-serif;margin-top:2px">${pct}%</div>
+          <div style="margin-top:4px;height:3px;background:rgba(255,255,255,0.08);border-radius:2px;overflow:hidden">
+            <div style="height:100%;background:var(--success);width:${v > 0 ? Math.round(bev/v*100) : 0}%;border-radius:2px"></div>
+          </div>
+        </div>`;
+      }).join('')}
+    </div>
+
+    <!-- Maandgrafiek -->
+    <div style="font-family:'Anton',sans-serif;font-size:13px;letter-spacing:1px;color:var(--gray);margin-bottom:8px;text-transform:uppercase">Per maand</div>
+    <div style="position:relative;width:100%;height:130px;margin-bottom:12px">
+      <canvas id="omzetCanvas" role="img" aria-label="Omzet per maand ${omzetJaar}"></canvas>
+    </div>
+
+    <!-- Per ruimte -->
+    <div style="font-family:'Anton',sans-serif;font-size:13px;letter-spacing:1px;color:var(--gray);margin-bottom:8px;text-transform:uppercase">Per ruimte</div>
     ${Object.entries(perRuimte).sort((a,b)=>b[1]-a[1]).map(([r,v])=>`
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
-        <div style="font-family:'Barlow Condensed',sans-serif;font-size:12px;color:var(--gray);width:90px;flex-shrink:0">${r}</div>
+        <div style="font-family:'Barlow Condensed',sans-serif;font-size:11px;color:var(--gray);width:90px;flex-shrink:0">${r}</div>
         <div style="flex:1;height:8px;background:rgba(255,255,255,0.08);border-radius:4px;overflow:hidden">
           <div style="height:100%;border-radius:4px;background:${ROOM_C[r]||'var(--gold)'};width:${Math.round(v/maxRuimte*100)}%"></div>
         </div>
-        <div style="font-family:'Barlow Condensed',sans-serif;font-size:12px;color:var(--white);width:40px;text-align:right">€${Math.round(v/1000)}K</div>
+        <div style="font-family:'Barlow Condensed',sans-serif;font-size:12px;color:var(--white);width:44px;text-align:right">€${Math.round(v/1000)}K</div>
       </div>`).join('')}
-    <div class="section-header" style="margin-top:14px"><div class="section-title" style="font-size:14px">Per maand ${year}</div></div>
-    <div style="position:relative;width:100%;height:120px;margin-bottom:8px">
-      <canvas id="omzetCanvas" role="img" aria-label="Omzet per maand ${year}">Omzet per maand.</canvas>
-    </div>`;
 
+    <!-- Events teller -->
+    <div style="margin-top:12px;padding-top:12px;border-top:1px solid rgba(255,255,255,0.06);display:flex;justify-content:space-between;font-family:'Barlow Condensed',sans-serif;font-size:12px;color:var(--gray)">
+      <span>${forYear.filter(ev=>ev.status==='confirmed').length} bevestigd</span>
+      <span>${forYear.filter(ev=>ev.status!=='confirmed').length} openstaand</span>
+      <span>${forYear.length} events totaal</span>
+    </div>
+  `;
+
+  // Chart
   setTimeout(() => {
     const ctx = document.getElementById('omzetCanvas');
     if (!ctx || typeof Chart === 'undefined') return;
-    try { new Chart(ctx, {
-      type: 'bar',
-      data: {
-        labels: ['J','F','M','A','M','J','J','A','S','O','N','D'],
-        datasets: [{ data: maanden.map(v=>Math.round(v)), backgroundColor: '#D4940A', borderRadius: 3 }]
-      },
-      options: {
-        responsive: true, maintainAspectRatio: false,
-        plugins: { legend: { display: false } },
-        scales: {
-          x: { ticks: { color: '#8a9bb0', font: { size: 9 } }, grid: { display: false } },
-          y: { ticks: { color: '#8a9bb0', font: { size: 9 }, callback: v => '€'+Math.round(v/1000)+'K' }, grid: { color: 'rgba(255,255,255,0.05)' } }
+    if (omzetChart) { try { omzetChart.destroy(); } catch(e) {} }
+    try {
+      omzetChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: MONTHS_SHORT,
+          datasets: [
+            { label: 'Bevestigd', data: maandenBevestigd.map(v=>Math.round(v)), backgroundColor: '#4caf82', borderRadius: 3, stack: 'a' },
+            { label: 'Openstaand', data: maanden.map((v,i)=>Math.round(v-maandenBevestigd[i])), backgroundColor: '#D4940A', borderRadius: 3, stack: 'a' }
+          ]
+        },
+        options: {
+          responsive: true, maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: {
+            x: { stacked: true, ticks: { color: '#8a9bb0', font: { size: 9 } }, grid: { display: false } },
+            y: { stacked: true, ticks: { color: '#8a9bb0', font: { size: 9 }, callback: v => '€'+Math.round(v/1000)+'K' }, grid: { color: 'rgba(255,255,255,0.05)' } }
+          }
         }
-      }
-    }); } catch(e) { console.warn('Chart error:', e); }
+      });
+    } catch(e) { console.warn('Chart error:', e); }
   }, 100);
 }
 
