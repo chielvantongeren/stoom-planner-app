@@ -1837,23 +1837,15 @@ async function loadAanvragen() {
   }
 
   try {
-    // Try requests/leads endpoint
-    const data = await miceGet('/events?limit=50&page=1&status=request');
+    const data = await miceGet('/events?limit=50&page=1');
     const events = data.data || data.events || data || [];
-    renderAanvragen(events);
+    const open = events.filter(ev => {
+      const s = (ev.status || '').toLowerCase();
+      return s === 'unconfirmed' || s === 'option' || s === 'optie';
+    });
+    renderAanvragen(open);
   } catch(e) {
-    try {
-      // Fallback: get all and filter by status
-      const data = await miceGet('/events?limit=100&page=1');
-      const events = data.data || data.events || data || [];
-      const requests = events.filter(ev => {
-        const s = (ev.status || '').toLowerCase();
-        return s === 'request' || s === 'aanvraag' || s === 'option' || s === 'optie';
-      });
-      renderAanvragen(requests);
-    } catch(e2) {
-      el.innerHTML = `<div class="empty-box"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.5" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg><div class="empty-text">API fout: ${e2.message}</div></div>`;
-    }
+    el.innerHTML = `<div class="empty-box"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.5" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg><div class="empty-text">Fout: ${e.message}</div></div>`;
   }
   btn.classList.remove('spinning');
 }
