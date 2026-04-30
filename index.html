@@ -2210,67 +2210,80 @@ function renderOmzet() {
 }
 
 // ─── BEZETTING ────────────────────────────────────────
+let bezettingAllEvents = [];
+
 async function loadBezetting() {
   const el = document.getElementById('bezettingContent');
   if (el.dataset.loaded) return;
   el.dataset.loaded = '1';
-  el.innerHTML = '<div class="loading-box"><div class="spinner"></div><div class="loading-text">Berekenen...</div></div>';
+  el.innerHTML = '<div class="loading-box"><div class="spinner"></div><div class="loading-text">Events laden...</div></div>';
   try {
-    const data = await miceGet('/events?limit=25&page=1');
-    const items = Array.isArray(data) ? data : (data.data || []);
-    renderBezetting(items);
+    let all = [];
+    for (let p = 1; p <= 14; p++) {
+      const data = await miceGet('/events?limit=25&page=' + p);
+      const items = Array.isArray(data) ? data : (data.data || []);
+      if (!items.length) break;
+      all = all.concat(items);
+    }
+    bezettingAllEvents = all;
+    renderBezetting();
   } catch(e) {
-    el.innerHTML = `<div class="empty-box"><div class="empty-text">Fout: ${e.message}</div></div>`;
+    el.innerHTML = '<div class="empty-box"><div class="empty-text">Fout: ' + e.message + '</div></div>';
   }
 }
 
-function renderBezetting(events) {
+function renderBezetting() {
   const el = document.getElementById('bezettingContent');
   const SKIP = ['cancelled','option_expired','declined'];
-  const active = events.filter(ev => !SKIP.includes((ev.status||'').toLowerCase()));
   const ROOMS = [
-    { name: 'Het Lab', id: settings.locLab, color: '#D4940A' },
-    { name: 'De Werkplaats', id: settings.locWerkplaats, color: '#4caf82' },
-    { name: 'De Bossroom', id: settings.locBoss, color: '#6b9fd4' }
+    {name:'Het Lab', id:settings.locLab, color:'#D4940A'},
+    {name:'De Werkplaats', id:settings.locWerkplaats, color:'#4caf82'},
+    {name:'De Bossroom', id:settings.locBoss, color:'#6b9fd4'}
   ];
+  const MONTHS = ['jan','feb','mrt','apr','mei','jun','jul','aug','sep','okt','nov','dec'];
 
-  // Huidige + volgende 3 maanden
-  const now = new Date();
-  const maanden = [];
-  for (let i = 0; i < 4; i++) {
-    const d = new Date(now.getFullYear(), now.getMonth() + i, 1);
-    maanden.push(d);
-  }
-
-  const MONTHS_NL = ['jan','feb','mrt','apr','mei','jun','jul','aug','sep','okt','nov','dec'];
-
-  let html = '';
-  maanden.forEach(m => {
-    const year = m.getFullYear();
-    const month = m.getMonth();
-    const daysInMonth = new Date(year, month + 1, 0).getDate();
-    html += `<div style="margin-bottom:14px">
-      <div style="font-family:'Anton',sans-serif;font-size:14px;letter-spacing:1px;color:var(--white);margin-bottom:8px;text-transform:uppercase">${MONTHS_NL[month]} ${year}</div>`;
-    ROOMS.forEach(room => {
-      const roomEvents = active.filter(ev => {
-        const d = new Date(ev.datetime_start||'');
-        return d.getFullYear() === year && d.getMonth() === month &&
-          (ev.location?.name === room.name || String(ev.location_id) === room.id);
-      });
-      const bezetteDagen = new Set(roomEvents.map(ev => new Date(ev.datetime_start).getDate())).size;
-      const pct = Math.round(bezetteDagen / daysInMonth * 100);
-      html += `<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
-        <div style="font-family:'Barlow Condensed',sans-serif;font-size:11px;color:var(--gray);width:90px;flex-shrink:0">${room.name}</div>
-        <div style="flex:1;height:8px;background:rgba(255,255,255,0.08);border-radius:4px;overflow:hidden">
-          <div style="height:100%;border-radius:4px;background:${room.color};width:${pct}%"></div>
-        </div>
-        <div style="font-family:'Barlow Condensed',sans-serif;font-size:11px;color:var(--white);width:32px;text-align:right">${pct}%</div>
-      </div>`;
-    });
-    html += `</div>`;
+  const active = bezettingAllEvents.filter(function(ev) {
+    return !SKIP.includes((ev.status||'').toLowerCase());
   });
 
-  el.innerHTML = html;
+  const now = new Date();
+  let html = '';
+
+  // Komende 6 maanden
+  for (let mi = 0; mi < 6; mi++) {
+    const d = new Date(now.getFullYear(), now.getMonth() + mi, 1);
+    const year = d.getFullYear();
+    const month = d.getMonth();
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+    html += '<div style="margin-bottom:16px">';
+    html += '<div style="font-family:Anton,sans-serif;font-size:14px;letter-spacing:1px;color:var(--white);margin-bottom:8px;text-transform:uppercase">' + MONTHS[month] + ' ' + year + '</div>';
+
+    ROOMS.forEach(function(room) {
+      const roomEvents = active.filter(function(ev) {
+        const evDate = new Date(ev.datetime_start||'');
+        return evDate.getFullYear() === year && evDate.getMonth() === month &&
+          (ev.location && (ev.location.name === room.name || String(ev.location.id) === room.id) ||
+           String(ev.location_id) === room.id);
+      });
+      const bezetteDagen = new Set(roomEvents.map(function(ev) {
+        return new Date(ev.datetime_start).getDate();
+      })).size;
+      const pct = Math.round(bezetteDagen / daysInMonth * 100);
+
+      html += '<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">';
+      html += '<div style="font-family:Barlow Condensed,sans-serif;font-size:11px;color:var(--gray);width:90px;flex-shrink:0">' + room.name + '</div>';
+      html += '<div style="flex:1;height:8px;background:rgba(255,255,255,0.08);border-radius:4px;overflow:hidden">';
+      html += '<div style="height:100%;border-radius:4px;background:' + room.color + ';width:' + pct + '%"></div>';
+      html += '</div>';
+      html += '<div style="font-family:Barlow Condensed,sans-serif;font-size:11px;color:var(--white);width:32px;text-align:right">' + pct + '%</div>';
+      html += '</div>';
+    });
+
+    html += '</div>';
+  }
+
+  el.innerHTML = html || '<div class="empty-box"><div class="empty-text">Geen data</div></div>';
 }
 
 // ─── ZOEKEN ───────────────────────────────────────────
