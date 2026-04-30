@@ -1796,7 +1796,7 @@ function renderVandaag(events) {
         const time = formatTime(a.datetime_start);
         const timeEnd = formatTime(a.datetime_end);
         const evName = a.name || 'Activiteit';
-        const desc = a.description ? a.description.replace(/<[^>]+>/g, '').trim() : '';
+        const desc = a.description ? a.description.replace(/<[\s\S]*?>/g, '').trim() : '';
 
         html += `
           <div class="timeline-item">
