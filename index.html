@@ -1605,11 +1605,11 @@ async function testApi() {
   debugEl.textContent = 'Bezig...';
   debugEl.style.display = 'block';
   try {
-    const res = await fetch(`${MICE_BASE}/events?limit=3&page=1`, {
-      headers: {
-        'X-Authorization': `Basic ${settings.apiKey}`,
-        'Accept': 'application/json'
-      }
+    // Via de proxy, net als alle andere aanroepen. Deze aanroep verwees naar
+    // settings.apiKey, maar dat veld bestaat niet meer in de instellingen — de
+    // testknop stuurde dus "Basic undefined" mee en werkte niet.
+    const res = await fetch(`${MICE_BASE}?path=/events&limit=3&page=1`, {
+      headers: { 'Accept': 'application/json' }
     });
     const text = await res.text();
     debugEl.textContent = `Status: ${res.status}
